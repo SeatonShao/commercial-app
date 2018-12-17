@@ -74,7 +74,7 @@
 </template>
 
 <script>
-  import SideMenu from '@/components/menu/SideMenu'
+  import SideMenu from '@/components/menu/TSideMenu'
   import GlobalHeader from '@/components/page/GlobalHeader'
   import GlobalFooter from '@/components/page/GlobalFooter'
   import SettingDrawer from '@/components/setting/SettingDrawer'

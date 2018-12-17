@@ -132,7 +132,8 @@ export default {
           theme: this.$props.theme,
           mode: this.$props.mode,
           openKeys: this.openKeys,
-          selectedKeys: this.selectedKeys
+          selectedKeys: this.selectedKeys,
+          inlineCollapsed: this.collapsed
         },
         on: {
           openChange: this.onOpenChange,
