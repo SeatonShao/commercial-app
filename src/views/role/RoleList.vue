@@ -95,12 +95,12 @@
 
 <script>
   import PageLayout from '@/components/page/PageLayout'
-  import { getRoleList, getPermissions } from "@/api/manage"
+  import { getRoleList, getPermissions } from '@/api/manage'
   import { actionToObject } from '@/utils/permissions'
   import pick from 'lodash.pick'
 
   export default {
-    name: "RoleList",
+    name: 'RoleList',
     components: {
       PageLayout
     },
@@ -168,7 +168,7 @@
       },
       loadPermissions () {
         getPermissions().then(res => {
-          let result = res.result
+          const result = res.result
           this.permissions = result.map(permission => {
             const options = actionToObject(permission.actionData)
             permission.checkedAll = false
