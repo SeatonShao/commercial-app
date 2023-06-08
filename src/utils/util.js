@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 export function timeFix () {
   const time = new Date()
   const hour = time.getHours()
@@ -92,4 +93,39 @@ export function scorePassword (pass) {
   score += (variationCount - 1) * 10
 
   return parseInt(score)
+}
+
+export default {
+  /*****
+   * 判断空字符串
+   */
+   isEmptyStr(s) {
+    if (s == undefined || s === '') {
+      return true
+    }
+    return false
+  },
+  /******
+   * 判断非空字符串
+   */
+   isNotEmptyStr(s) {
+    if (typeof s == 'string' && s.length > 0) {
+          return true
+    }
+    return false
+  },
+  /***
+   * 判断是数字
+   *
+   */
+  isNumeric(value) {
+    return !isNaN(parseFloat(value)) && isFinite(value)
+  },
+  /***
+   * 判断是数字q且不大于0
+   *
+   */
+  isLE0(value) {
+    return !this.isNumeric(value) || (parseFloat(value)) <= 0
+  }
 }

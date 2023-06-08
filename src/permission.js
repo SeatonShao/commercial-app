@@ -1,6 +1,6 @@
 import router, { resetRouter } from './router'
 import store from './store'
-import storage from 'store'
+import Vue from 'vue'
 import NProgress from 'nprogress' // progress bar
 import '@/components/NProgress/nprogress.less' // progress bar custom style
 import notification from 'ant-design-vue/es/notification'
@@ -12,13 +12,14 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const allowList = ['login', 'register', 'registerResult'] // no redirect allowList
 const loginRoutePath = '/user/login'
-const defaultRoutePath = '/dashboard/workplace'
+const defaultRoutePath = '/dashboard/welcome'
 
 router.beforeEach((to, from, next) => {
   NProgress.start() // start progress bar
   to.meta && typeof to.meta.title !== 'undefined' && setDocumentTitle(`${i18nRender(to.meta.title)} - ${domTitle}`)
   /* has token */
-  const token = storage.get(ACCESS_TOKEN)
+  const token = Vue.ls.get(ACCESS_TOKEN)
+  console.info('token', token)
   if (token) {
     if (to.path === loginRoutePath) {
       next({ path: defaultRoutePath })

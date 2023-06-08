@@ -12,16 +12,17 @@
         :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
         @change="handleTabClick"
       >
-        <a-tab-pane key="tab1" :tab="$t('user.login.tab-login-credentials')">
-          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="$t('user.login.message-invalid-credentials')" />
+        <a-tab-pane key="tab1" tab="账号密码登录">
+          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="this.accountLoginErrMsg" />
+
           <a-form-item>
             <a-input
               size="large"
               type="text"
-              :placeholder="$t('user.login.username.placeholder')"
+              placeholder="账号"
               v-decorator="[
-                'username',
-                {rules: [{ required: true, message: $t('user.userName.required') }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
+                'account',
+                { initialValue:'17861617982', rules: [{ required: true, message: '请输入帐户名' }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
               ]"
             >
               <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
@@ -29,21 +30,24 @@
           </a-form-item>
 
           <a-form-item>
-            <a-input-password
+            <a-input
               size="large"
-              :placeholder="$t('user.login.password.placeholder')"
+              type="password"
+              autocomplete="false"
+              placeholder="密码"
               v-decorator="[
                 'password',
-                {rules: [{ required: true, message: $t('user.password.required') }], validateTrigger: 'blur'}
+                { initialValue:'123456', rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
               ]"
             >
               <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
-            </a-input-password>
+            </a-input>
           </a-form-item>
         </a-tab-pane>
-        <a-tab-pane key="tab2" :tab="$t('user.login.tab-login-mobile')">
+        <a-tab-pane key="tab2" tab="手机号登录">
+          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="this.accountLoginErrMsg" />
           <a-form-item>
-            <a-input size="large" type="text" :placeholder="$t('user.login.mobile.placeholder')" v-decorator="['mobile', {rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: $t('user.login.mobile.placeholder') }], validateTrigger: 'change'}]">
+            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
               <a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input>
           </a-form-item>
@@ -51,7 +55,7 @@
           <a-row :gutter="16">
             <a-col class="gutter-row" :span="16">
               <a-form-item>
-                <a-input size="large" type="text" :placeholder="$t('user.login.mobile.verification-code.placeholder')" v-decorator="['captcha', {rules: [{ required: true, message: $t('user.verification-code.required') }], validateTrigger: 'blur'}]">
+                <a-input size="large" type="text" placeholder="验证码" v-decorator="['captcha', {rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur'}]">
                   <a-icon slot="prefix" type="mail" :style="{ color: 'rgba(0,0,0,.25)' }"/>
                 </a-input>
               </a-form-item>
@@ -62,7 +66,7 @@
                 tabindex="-1"
                 :disabled="state.smsSendBtn"
                 @click.stop.prevent="getCaptcha"
-                v-text="!state.smsSendBtn && $t('user.register.get-verification-code') || (state.time+' s')"
+                v-text="!state.smsSendBtn && '获取验证码' || (state.time+' s')"
               ></a-button>
             </a-col>
           </a-row>
@@ -70,12 +74,22 @@
       </a-tabs>
 
       <a-form-item>
-        <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">{{ $t('user.login.remember-me') }}</a-checkbox>
+        <a-checkbox style="display: none;" v-decorator="['rememberMe', { valuePropName: 'checked' }]">自动登录</a-checkbox>
         <router-link
           :to="{ name: 'recover', params: { user: 'aaa'} }"
           class="forge-password"
           style="float: right;"
-        >{{ $t('user.login.forgot-password') }}</router-link>
+        >忘记密码</router-link>
+      </a-form-item>
+
+      <a-form-item>
+        <Verify
+          @success="verifySuccess"
+          :mode="'pop'"
+          :captchaType="captchaType"
+          :imgSize="{ width: '330px', height: '155px' }"
+          ref="verify"
+        ></Verify>
       </a-form-item>
 
       <a-form-item style="margin-top:24px">
@@ -86,11 +100,11 @@
           class="login-button"
           :loading="state.loginBtn"
           :disabled="state.loginBtn"
-        >{{ $t('user.login.login') }}</a-button>
+        >确定</a-button>
       </a-form-item>
-
+      <!--
       <div class="user-login-other">
-        <span>{{ $t('user.login.sign-in-with') }}</span>
+        <span>其他登录方式</span>
         <a>
           <a-icon class="item-icon" type="alipay-circle"></a-icon>
         </a>
@@ -100,8 +114,9 @@
         <a>
           <a-icon class="item-icon" type="weibo-circle"></a-icon>
         </a>
-        <router-link class="register" :to="{ name: 'register' }">{{ $t('user.login.signup') }}</router-link>
+        <router-link class="register" :to="{ name: 'register' }">注册账户</router-link>
       </div>
+      -->
     </a-form>
 
     <two-step-captcha
@@ -114,17 +129,28 @@
 </template>
 
 <script>
-import md5 from 'md5'
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
-import { timeFix } from '@/utils/util'
-import { getSmsCaptcha, get2step } from '@/api/login'
+import { getSmsCaptcha, getCaptchaOpen } from '@/api/loginManage'
+import Verify from '@/components/verifition/Verify'
 
 export default {
   components: {
-    TwoStepCaptcha
+    TwoStepCaptcha,
+    Verify
   },
   data () {
+    var captchaTypeValue = 'clickWord'
+    var min = 0
+    var max = 100
+    var random = Math.floor(Math.random() * (max - min)) + min
+
+    if (random % 2 === 0) {
+      captchaTypeValue = 'blockPuzzle'
+    }
+    if (random % 2 === 1) {
+      captchaTypeValue = 'clickWord'
+    }
     return {
       customActiveKey: 'tab1',
       loginBtn: false,
@@ -140,21 +166,30 @@ export default {
         // login type: 0 email, 1 username, 2 telephone
         loginType: 0,
         smsSendBtn: false
-      }
+      },
+      accountLoginErrMsg: '',
+      tenantOpen: false,
+      captchaOpen: false, // 是否开启验证码
+      tenantsList: [],
+      loginParams: [], // 登录参数
+      captchaType: captchaTypeValue
     }
   },
   created () {
-    get2step({ })
-      .then(res => {
-        this.requiredTwoStepCaptcha = res.result.stepCode
-      })
-      .catch(() => {
-        this.requiredTwoStepCaptcha = false
-      })
-    // this.requiredTwoStepCaptcha = true
+    this.getCaptchaOpen()
   },
   methods: {
-    ...mapActions(['Login', 'Logout']),
+    ...mapActions(['Login', 'Logout', 'dictTypeData']),
+    /**
+     * 获取验证码开关
+     */
+    getCaptchaOpen () {
+      getCaptchaOpen().then((res) => {
+        if (res.success) {
+          this.captchaOpen = res.data
+        }
+      })
+    },
     // handler
     handleUsernameOrEmail (rule, value, callback) {
       const { state } = this
@@ -167,6 +202,7 @@ export default {
       callback()
     },
     handleTabClick (key) {
+      this.isLoginError = false
       this.customActiveKey = key
       // this.form.resetFields()
     },
@@ -180,16 +216,27 @@ export default {
       } = this
 
       state.loginBtn = true
-
-      const validateFieldsKey = customActiveKey === 'tab1' ? ['username', 'password'] : ['mobile', 'captcha']
-
+      const validateFieldsKey = customActiveKey === 'tab1' ? ['account', 'password'] : ['mobile', 'captcha']
+      if (this.tenantOpen) {
+        validateFieldsKey.push('tenantCode')
+      }
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
+        this.loginParams = values
         if (!err) {
-          console.log('login form', values)
+          // 是否开启验证码
+          if (this.captchaOpen) {
+            this.$refs.verify.show()
+            state.loginBtn = false
+            return
+          }
           const loginParams = { ...values }
-          delete loginParams.username
-          loginParams[!state.loginType ? 'email' : 'username'] = values.username
-          loginParams.password = md5(values.password)
+          delete loginParams.account
+          loginParams.account = values.account
+
+          if (this.tenantOpen) {
+            loginParams.tenantCode = values.tenantCode
+          }
+
           Login(loginParams)
             .then((res) => this.loginSuccess(res))
             .catch(err => this.requestFailed(err))
@@ -202,6 +249,18 @@ export default {
           }, 600)
         }
       })
+    },
+    /**
+     * 获取验证码
+     */
+    verifySuccess (params) {
+      this.loginParams.code = params.captchaVerification
+      console.log(JSON.stringify(this.loginParams))
+      this.Login(this.loginParams).then((res) => this.loginSuccess(res))
+        .catch(err => this.requestFailed(err))
+        .finally(() => {
+          this.state.loginBtn = false
+        })
     },
     getCaptcha (e) {
       e.preventDefault()
@@ -247,35 +306,15 @@ export default {
       })
     },
     loginSuccess (res) {
-      console.log(res)
-      // check res.homePage define, set $router.push name res.homePage
-      // Why not enter onComplete
-      /*
-      this.$router.push({ name: 'analysis' }, () => {
-        console.log('onComplete')
-        this.$notification.success({
-          message: '欢迎',
-          description: `${timeFix()}，欢迎回来`
-        })
-      })
-      */
       this.$router.push({ path: '/' })
-      // 延迟 1 秒显示欢迎信息
-      setTimeout(() => {
-        this.$notification.success({
-          message: '欢迎',
-          description: `${timeFix()}，欢迎回来`
-        })
-      }, 1000)
       this.isLoginError = false
+      // 加载字典所有字典到缓存中
+      this.dictTypeData().then((res) => { })
     },
     requestFailed (err) {
+      console.info(err)
+      this.accountLoginErrMsg = err
       this.isLoginError = true
-      this.$notification['error']({
-        message: '错误',
-        description: ((err.response || {}).data || {}).message || '请求出现错误，请稍后再试',
-        duration: 4
-      })
     }
   }
 }

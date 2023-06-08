@@ -153,7 +153,7 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
   .custom-tree {
 
     :deep(.ant-menu-item-group-title) {

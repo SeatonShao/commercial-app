@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
-import storage from 'store'
 import moment from 'moment'
 
 // default lang
@@ -35,7 +34,7 @@ function setI18nLanguage (lang) {
 export function loadLanguageAsync (lang = defaultLang) {
   return new Promise(resolve => {
     // 缓存语言设置
-    storage.set('lang', lang)
+    Vue.ls.set('lang', lang)
     if (i18n.locale !== lang) {
       if (!loadedLanguages.includes(lang)) {
         return import(/* webpackChunkName: "lang-[request]" */ `./lang/${lang}`).then(msg => {

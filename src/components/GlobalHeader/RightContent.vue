@@ -49,8 +49,9 @@ export default {
   },
   mounted () {
     setTimeout(() => {
+      console.info(this.$store.state.user.name)
       this.currentUser = {
-        name: 'Serati Ma'
+        name: this.$store.state.user.name
       }
     }, 1500)
   }

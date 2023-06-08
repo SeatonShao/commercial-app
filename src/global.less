@@ -43,6 +43,9 @@ ol {
     margin-right: 8px;
   }
 }
+.ant-page-header-heading{
+  display: none;
+}
 // 数据列表 搜索条件
 .table-page-search-wrapper {
   .ant-form-inline {
@@ -92,6 +95,87 @@ ol {
           display: block;
         }
       }
+    }
+  }
+}
+
+.search-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  ant-form{
+  .ant-form-inline {
+    .ant-form-item {
+      display: flex;
+      margin-bottom: 3px;
+      margin-right: 0;
+
+      .ant-form-item-control-wrapper {
+        flex: 1 1;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      > .ant-form-item-label {
+        line-height: 27px;
+        padding-right: 8px;
+        width: auto;
+        text-align: left;
+      }
+      .ant-form-item-control {
+        height: 27px;
+        line-height: 27px;
+      }
+      .ant-calendar-picker {
+        width: 140px;
+        padding: 0 8px 0 0;
+      }
+      .ant-select {
+        width: 140px;
+        padding: 0 8px 0 0;
+        height: 27px;
+      }
+      .ant-select-selection--single{
+        width: 132px;
+        padding: 0 8px 0 0;
+        height: 27px;
+      }
+      .ant-select-selection__rendered{
+        height: 27px;
+        line-height: 27px;
+      }
+      .ant-input {
+        text-overflow: ellipsis;
+        padding: 1px 1px 1px 1px;
+        height: 27px;
+      }
+      .ant-input[disabled] {
+        padding: 1px 1px 1px 0px;
+      }
+      .ant-input-affix-wrapper{
+        height: 27px;
+      }
+      .ant-form label {
+        font-size: 14px;
+      }
+      .ant-row-flex {
+        height: 27px;
+      }
+      .ant-col {
+        height: 27px;
+      }
+      .ant-btn {
+        height: 27px;
+      }
+    }
+  }
+}
+  .table-page-search-submitButtons {
+    height: 30px;
+    display: block;
+    margin-bottom: 0px;
+    white-space: nowrap;
+    .ant-btn {
+      height: 27px;
     }
   }
 }

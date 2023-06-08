@@ -24,6 +24,9 @@ import IconSelector from '@/components/IconSelector'
 import TagSelect from '@/components/TagSelect'
 import StandardFormRow from '@/components/StandardFormRow'
 import ArticleListContent from '@/components/ArticleListContent'
+import SearchForm from '@/components/SearchForm'
+import Product from '@/components/Product'
+import OrderModal from '@/components/OrderModal'
 
 import Dialog from '@/components/Dialog'
 
@@ -51,6 +54,8 @@ export {
   TagSelect,
   StandardFormRow,
   ArticleListContent,
-
+  SearchForm,
+  Product,
+  OrderModal,
   Dialog
 }
