@@ -1,5 +1,5 @@
 export default {
-    'menu.welcome': 'Welcome',
+    'menu.order': 'Order Management',
     'menu.home': 'Home',
     'menu.dashboard': 'Dashboard',
     'menu.dashboard.analysis': 'Analysis',

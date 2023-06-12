@@ -47,7 +47,7 @@
         <a-tab-pane key="tab2" tab="手机号登录">
           <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="this.accountLoginErrMsg" />
           <a-form-item>
-            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
+            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {initialValue: '16653966066', rules: [{ required: true, pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
               <a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input>
           </a-form-item>
@@ -224,7 +224,7 @@ export default {
         this.loginParams = values
         if (!err) {
           // 是否开启验证码
-          if (this.captchaOpen) {
+          if (this.captchaOpen && customActiveKey === 'tab1') {
             this.$refs.verify.show()
             state.loginBtn = false
             return
@@ -232,11 +232,12 @@ export default {
           const loginParams = { ...values }
           delete loginParams.account
           loginParams.account = values.account
+          loginParams.customActiveKey = customActiveKey
 
           if (this.tenantOpen) {
             loginParams.tenantCode = values.tenantCode
           }
-
+          console.info(loginParams)
           Login(loginParams)
             .then((res) => this.loginSuccess(res))
             .catch(err => this.requestFailed(err))
@@ -256,6 +257,7 @@ export default {
     verifySuccess (params) {
       this.loginParams.code = params.captchaVerification
       console.log(JSON.stringify(this.loginParams))
+      this.loginParams.customActiveKey = 'tab1'
       this.Login(this.loginParams).then((res) => this.loginSuccess(res))
         .catch(err => this.requestFailed(err))
         .finally(() => {
@@ -279,13 +281,13 @@ export default {
           }, 1000)
 
           const hide = this.$message.loading('验证码发送中..', 0)
-          getSmsCaptcha({ mobile: values.mobile }).then(res => {
+          getSmsCaptcha({ phoneNumber: values.mobile, type: 1 }).then(res => {
             setTimeout(hide, 2500)
-            this.$notification['success']({
-              message: '提示',
-              description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-              duration: 8
-            })
+            // this.$notification['success']({
+            //   message: '提示',
+            //   description: '验证码获取成功，您的验证码为：' + res.result.captcha,
+            //   duration: 8
+            // })
           }).catch(err => {
             setTimeout(hide, 1)
             clearInterval(interval)

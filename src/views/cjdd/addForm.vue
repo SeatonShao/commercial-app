@@ -101,7 +101,7 @@ export default {
         console.info(this.form, { khmc: khmc, khbh: khbh })
         this.form.setFieldsValue({ khmc: khmc, khbh: khbh })
         if (data) {
-          this.form.setFieldsValue({ id: data.id, shrs: data.shrs, shdz: data.shdz, lxdh: data.lxdh, mrdz: data.mrdz })
+          this.form.setFieldsValue({ id: data.id, shrs: data.shrs, shdz: data.shdz, lxdh: data.lxdh, mrdz: data.mrdz == '1' })
         }
       }, 1000)
     },
@@ -120,7 +120,8 @@ export default {
           if (values.mrdz) {
             values.mrdz = '1'
           } else {
-            values.mrdz = '0'
+            this.$message.warn('必须有一个默认地址！')
+            return
           }
           if (!values.id) {
             shdz

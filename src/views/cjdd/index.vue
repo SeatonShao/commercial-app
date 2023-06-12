@@ -16,7 +16,7 @@
               <a-form-model-item label="采购方：" prop="kh">
                 <a-select v-model="form.kh" mode="default" @change="changeKH()">
                   <a-select-option
-                    :value="item.synm + ';' + item.symc+ ';' + item.sybm"
+                    :value="item.synm + ';' + item.symc + ';' + item.sybm"
                     v-for="(item, index) in $store.state.user.gxList"
                     :key="index"
                   >
@@ -162,7 +162,6 @@ import order from '@/api/order'
 import u from '@/utils/util'
 import shdz from '@/api/shdz'
 import addForm from './addForm.vue'
-import { mapActions } from 'vuex'
 export default {
   components: {
     Product,
@@ -234,12 +233,6 @@ export default {
           ellipsis: true
         },
         {
-          title: '计量单位',
-          align: 'center',
-          dataIndex: 'jldw',
-          width: 100
-        },
-        {
           title: '件装量',
           align: 'center',
           dataIndex: 'jzl',
@@ -308,10 +301,60 @@ export default {
       }
     }
   },
+  watch: {
+    '$route.query.ddls': {
+      immediate: true,
+      deep: true,
+      handler(nv) {
+        console.info(nv)
+        if (nv) {
+          this.queryDetail()
+        }
+      }
+    }
+  },
   created() {
     window.addEventListener('resize', this.getHeight)
   },
   methods: {
+     queryDetail() {
+      this.spinning = true
+      order
+        .orderDetail({ ddls: this.$route.query.ddls })
+        .then(async res => {
+          if (res.code === 200) {
+           const record = res.data
+            console.info(record)
+        const kh = record.khnm + ';' + record.khmc + ';' + record.khbh
+        await shdz.list({ khbh: record.khnm }).then((res) => {
+          if (res.code === 200) {
+            this.data = res.data
+            console.info(this.data)
+            this.data.push({ id: '' })
+          }
+        })
+
+         Object.assign(this.form, {
+          kh: kh,
+          lxr: record.lxr,
+          lxdh: record.lxdh,
+          shdz: record.shdz,
+          shrs: record.lxr + ',' + record.lxdh + ',' + record.shdz,
+          khmc: record.khmc,
+          khnm: record.khnm,
+          khbh: record.khbh,
+          hkdd: '',
+          hkddurl: '',
+          ddmxList: record.mxList,
+          ddzje: record.ddzje
+         })
+         console.info(this.form)
+          }
+        })
+        .finally(() => {
+          this.spinning = false
+        })
+    },
     saveDD() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
@@ -424,7 +467,7 @@ export default {
             }
           }
         }
-          order.templateAdd(this.form).then((res) => {
+          order.templateAdd(Object.assign({ mxList: this.form.ddmxList }, this.form)).then((res) => {
             if (res.code === 200) {
               this.$message.success('模板保存成功')
               this.mbmc = ''
@@ -601,19 +644,42 @@ export default {
         this.queryXSLX()
       }
     },
-    closeModal(type, record) {
+    async closeModal(type, record) {
       console.info('closeModal', type, record)
+      if (record) {
       if (type === 'product') {
         this.form.ddmxList.push(Object.assign({ js: 0, sl: 0, dj: 0 }, record))
       } else if (type === 'modal') {
         console.info(record)
-        this.form = record
+        const kh = record.khnm + ';' + record.khmc + ';' + record.khbh
+        await shdz
+        .list({ khbh: record.khnm })
+        .then((res) => {
+          if (res.code === 200) {
+            this.data = res.data
+            console.info(this.data)
+            this.data.push({ id: '' })
+          }
+        })
+
+         Object.assign(this.form, {
+          kh: kh,
+          lxr: record.lxr,
+          lxdh: record.lxdh,
+          shdz: record.shdz,
+          shrs: record.lxr + ',' + record.lxdh + ',' + record.shdz,
+          khmc: record.khmc,
+          khnm: record.khnm,
+          khbh: record.khbh,
+          hkdd: '',
+          hkddurl: '',
+          ddmxList: record.mxList,
+          ddzje: record.ddzje
+         })
+         console.info(this.form)
       }
+    }
       this.showOrderModal = false
-    },
-    onChange(type) {
-      if (type === 'khmc') {
-      }
     },
     handleChange(info) {
       let fileList = [...info.fileList]
@@ -633,38 +699,9 @@ export default {
 
       this.fileList = fileList
     },
-    onSelect(value) {
-      console.log('onSelect', value)
-    },
-    add() {
-      this.form.ddmxList.push({
-        lsbh: '',
-        ddls: '',
-        cpnm: '',
-        cpmc: '',
-        bzgg: '',
-        cpbm: '',
-        scqy: '',
-        jzl: 0,
-        sl: 0,
-        js: 0,
-        dj: 0,
-        je: 0,
-        yfsl: 0,
-        dfsl: '',
-        zcxx: '',
-        kfj: 0,
-        shlv: 0,
-        zt: ''
-      })
-    },
-    showModal() {
-      console.info('show')
-    },
     getHeight() {
       this.tableHeight = window.innerHeight - 265
-    },
-    ...mapActions(['Login', 'Logout'])
+    }
   }
 }
 </script>

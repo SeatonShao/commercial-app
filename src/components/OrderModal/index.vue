@@ -1,5 +1,11 @@
 <template>
-  <a-modal :visible="showOrderModal" title="选择订单模板" width="800px" :footer="null" @cancel="closeModal">
+  <a-modal
+    :visible="showOrderModal"
+    title="选择订单模板"
+    width="800px"
+    :confirmLoading="false"
+    @ok="handleOk"
+    @cancel="closeModal">
     <div>
       <div class="search-wrapper">
         <a-row>
@@ -19,15 +25,14 @@
           ref="table"
           :columns="columns"
           :dataSource="data"
-          :scroll="{ x: 800, y: 300 }"
-          :rowKey="(record) => Math.random() * 1000000"
+          :rowKey="(record) => record.lsbh"
           :pagination="pagination"
-          :customRow="clickThenSelect"
+          :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange,type: 'radio' }"
           @change="handleTableChange"
           bordered
         >
-          <template slot="action" slot-scope="text, record, index">
-            <a-button type="link" @click="del(index)">删除</a-button>
+          <template slot="action" slot-scope="text, record">
+            <a-button type="link" @click="del(record.lsbh)">删除</a-button>
           </template>
         </a-table>
       </div>
@@ -35,9 +40,7 @@
   </a-modal>
 </template>
 <script>
-import moment from 'moment'
 import order from '@/api/order'
-import { mapActions } from 'vuex'
 export default {
   props: {
     showOrderModal: {
@@ -48,6 +51,8 @@ export default {
   data() {
     return {
       // 查询参数
+      selectedRows: [],
+      selectedRowKeys: [],
       // queryParam: {},
       queryParam: { userid: this.$route.query.userid },
       // 表头
@@ -55,40 +60,19 @@ export default {
         {
           title: '模板名称',
           align: 'center',
-          dataIndex: 'mbmc',
-          width: 60
+          dataIndex: 'mbmc'
         },
         {
-          title: '客户名称',
+          title: '商业单位',
           align: 'center',
-          dataIndex: 'khmc',
-          width: 100
-        },
-        {
-          title: '收货人',
-          align: 'center',
-          width: 80,
-          dataIndex: 'shr'
-        },
-        {
-          title: '联系电话',
-          align: 'center',
-          dataIndex: 'lxdh',
-          width: 100
-        },
-        {
-          title: '收货地址',
-          align: 'center',
-          dataIndex: 'shdz',
-          width: 120,
-          ellipsis: true
+          dataIndex: 'khmc'
         },
         {
           title: '操作',
           align: 'center',
           dataIndex: 'action',
           scopedSlots: { customRender: 'action' },
-          width: 60
+          width: 160
         }
       ],
       pagination: {
@@ -102,7 +86,30 @@ export default {
   created() {
     window.addEventListener('resize', this.getHeight)
   },
+  watch: {
+    showOrderModal(v) {
+      this.loadData()
+    }
+  },
   methods: {
+    del(id) {
+      order
+        .templateDel({ lsbh: id })
+        .then((res) => {
+          if (res.message) {
+            this.$message.success(res.message)
+            this.loadData()
+          }
+        }
+        )
+    },
+    handleOk() {
+        if (this.selectedRows.length < 1) {
+          this.$message.warn('请选择一条记录！')
+          return
+        }
+        this.closeModal(this.selectedRows[0])
+      },
     loadData() {
       console.info(order)
       const page = Object.assign({
@@ -116,7 +123,7 @@ export default {
           this.pageSize
       })
       order
-        .templatePage(Object.assign(page, { khmc: this.queryParam.queryParam }))
+        .templatePage(Object.assign(page, { mbmc: this.queryParam.mbmc, zdrid: this.$store.state.user.info.syzhid }))
         .then((res) => {
           if (res.code === 200) {
             this.data = res.data.rows
@@ -134,6 +141,11 @@ export default {
           console.info(e)
         })
     },
+    onSelectChange(selectedRowKeys, selectedRows) {
+      console.info(selectedRows)
+      this.selectedRowKeys = selectedRowKeys
+      this.selectedRows = selectedRows
+      },
     handleTableChange(pagination, filters, sorter) {
       console.log(pagination)
       const pager = { ...this.pagination }
@@ -141,22 +153,9 @@ export default {
       this.pagination = pager
       this.loadData()
     },
-    clickThenSelect(record, index) {
-      const vm = this
-      console.info(this)
-      return {
-        on: {
-          click: () => {
-            vm.closeModal(record)
-          }
-        }
-      }
-    },
     closeModal(record) {
       this.$emit('closeModal', 'modal', record)
-    },
-    moment,
-    ...mapActions(['Login', 'Logout'])
+    }
   }
 }
 </script>

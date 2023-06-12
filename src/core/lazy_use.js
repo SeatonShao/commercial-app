@@ -26,6 +26,7 @@ import {
   List,
   Avatar,
   Breadcrumb,
+  Timeline,
   Steps,
   Spin,
   Menu,
@@ -101,6 +102,7 @@ Vue.use(Result)
 Vue.use(Statistic)
 Vue.use(Descriptions)
 Vue.use(Space)
+Vue.use(Timeline)
 
 Vue.prototype.$confirm = Modal.confirm
 Vue.prototype.$message = message

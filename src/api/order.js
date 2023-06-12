@@ -335,6 +335,32 @@ export default {
     data: parameter
   })
 },
+  /**
+   * 订单2创建
+   *
+   * @author xiao
+   * @Date 2023-05-23 14:48:35
+   */
+   createOrderPC(parameter) {
+    return axios({
+      url: '/order/pcCreateOrder',
+      method: 'post',
+      data: parameter
+    })
+  },
+  /**
+   * 采购端上传汇款底单
+   *
+   * @author xiao
+   * @Date 2023-05-23 14:48:35
+   */
+   uploadReceipt(parameter) {
+    return axios({
+      url: '/order/uploadReceipt',
+      method: 'post',
+      data: parameter
+    })
+  },
    /**
    * 图片上传
    *

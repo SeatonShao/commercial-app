@@ -28,6 +28,23 @@ export function login (parameter) {
 }
 
 /**
+ * 登录
+ *
+ * @author Jonny
+ * @date 2020/5/26 19:06
+ */
+export function loginMobile (parameter) {
+  // 密码采用sm2加密传输密码
+
+  return axios({
+    url: '/business/codeLogin',
+    // url: '/login',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
  * 登出
  *
  * @author Jonny
@@ -77,7 +94,7 @@ export function getTenantOpen (parameter) {
  */
 export function getSmsCaptcha (parameter) {
   return axios({
-    url: '/getSmsCaptcha',
+    url: '/getVerificationCode',
     method: 'get',
     params: parameter
   })

@@ -243,7 +243,7 @@
               console.info(e)
             })
           } else if (this.formName === 'skdmc') {
-            order.skdDict(Object.assign(page, { gzdwnm: '3093CD24-BA89-4A73-B546-AB016E8DCBD0' })).then(res => {
+            order.skdDict(Object.assign(page, { gzdwnm: this.queryParam.queryParam })).then(res => {
               if (res.code === 200) {
                 this.data = res.data.rows
                 const pagination = { ...this.pagination }

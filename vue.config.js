@@ -18,7 +18,7 @@ function getGitHash () {
   return 'unknown'
 }
 // eslint-disable-next-line no-unused-vars
-const isProd = process.env.NODE_ENV === 'production'
+const isProd = process.NODE_ENV === 'production'
 // eslint-disable-next-line no-unused-vars
 const assetsCDN = {
   // webpack build externals

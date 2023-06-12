@@ -26,7 +26,7 @@
                 </a-select>
               </a-form-model-item> </a-col
             ><a-col :span="9" :offset="2">
-              <a-form-model-item label="采购方：" >
+              <a-form-model-item label="采购方：" prop="kh">
                 <a-select v-model="form.kh" mode="default" :style="dropdownStyle" @change="changeKH">
                   <a-select-option :value="item.synm + ';' + item.symc+ ';' + item.sybm" v-for="(item, index) in $store.state.user.gxList" :key="index"> {{ item.symc }} </a-select-option>
                 </a-select>
@@ -35,7 +35,7 @@
           </a-row>
           <a-row :gutter="gutter">
             <a-col :span="9" :offset="2">
-              <a-form-model-item label="发货经理：" required prop="fhjlmc">
+              <a-form-model-item label="发货经理：" prop="fhjlmc">
                 <a-input-search
                   v-model="form.fhjlmc"
                   allow-clear
@@ -197,8 +197,8 @@
                 </a-radio-group>
               </a-form-model-item>
             </a-col>
-            <a-col :span="9" offset="2">
-              <a-form-model-item label="账期天数：" >
+            <a-col :span="9" offset="2" v-show="this.form.hkfs=='赊销'">
+              <a-form-model-item label="账期天数：" prop="zqts">
                 <a-select v-model="form.zqts" style="width: calc(100% - 25px);padding: 0;box-sizing: border-box;vertical-align: middle;">
                   <a-select-option :value="item" v-for="item in zqList" :key="item">
                     {{ item }}
@@ -212,7 +212,7 @@
             <a-col :span="7" :offset="2">
               <a-form-model-item label="汇款底单：" prop="hkdd" >
                 <a-input-search
-                  readonly
+                  read-only
                   placeholder=""
                   v-model="form.hkdd"
                   @search="changeHKDD"
@@ -260,7 +260,7 @@
           </a-row>
           <a-row :gutter="gutter">
             <a-col :span="9" :offset="2">
-              <a-form-model-item label="汇款备注：" >
+              <a-form-model-item label="汇款备注：" prop="hkbz" >
                 <a-input v-model="form.hkbz" placeholder="" :style="dropdownStyle" />
               </a-form-model-item>
             </a-col>
@@ -285,7 +285,7 @@
               </a-form-model-item>
             </a-col>
             <a-col :span="9" offset="2">
-              <a-form-model-item label="商业采购：" >
+              <a-form-model-item label="商业采购：" prop="sycg" >
                 <a-select v-model="form.sycg" :style="dropdownStyle" @change="changeSycg">
                   <a-select-option :value="item.yhzh+','+item.yhmc" v-for="(item, index) in sycgList" :key="index">
                     {{ item.yhmc }}
@@ -296,13 +296,13 @@
           </a-row>
           <a-row :gutter="gutter">
             <a-col :span="9" :offset="2">
-              <a-form-model-item label="订单备注：" >
+              <a-form-model-item label="订单备注：" prop="ddbz">
                 <a-input placeholder="" v-model="form.ddbz" :style="dropdownStyle" />
               </a-form-model-item>
             </a-col>
             <a-col :span="9" offset="2">
               <a-form-model-item label="制单人：" >
-                <a-input placeholder="" v-model="form.zdrmc" :style="dropdownStyle" />
+                <a-input placeholder="" v-model="form.zdrmc" :style="dropdownStyle" read-only/>
               </a-form-model-item>
             </a-col>
           </a-row>
@@ -428,12 +428,6 @@ export default {
           dataIndex: 'scqymc',
           width: 150,
           ellipsis: true
-        },
-        {
-          title: '计量单位',
-          align: 'center',
-          dataIndex: 'jldw',
-          width: 100
         },
         {
           title: '件装量',
@@ -564,6 +558,7 @@ export default {
         fpkj: '',
         zl: '',
         zlArr: ['随货同行', '发票'],
+        sycg: '',
         sycgid: '',
         sycgmc: '',
         ddbz: '',
@@ -575,7 +570,73 @@ export default {
     window.addEventListener('resize', this.getHeight)
     this.queryFPKJ()
   },
+  watch: {
+    '$route.query.ddls': {
+      immediate: true,
+      deep: true,
+      handler(nv) {
+        console.info(nv)
+        if (nv) {
+          this.queryDetail()
+        }
+      }
+    }
+  },
   methods: {
+    queryDetail() {
+      this.spinning = true
+      order
+        .orderDetail({ ddls: this.$route.query.ddls })
+        .then(async res => {
+          if (res.code === 200) {
+           const record = res.data
+           console.info(record)
+        const kh = record.khnm + ';' + record.khmc + ';' + record.khbh
+        const sycg = record.sycgid + ',' + record.sycgmc
+        const zl = record.zl ? record.zl.split('+') : []
+        await shdz
+        .list({ khbh: record.khnm })
+        .then((res) => {
+          if (res.code === 200) {
+            this.data = res.data
+            console.info(this.data)
+            this.data.push({ id: '' })
+          }
+        })
+        await order.syzhDict({ sybm: record.khbh })
+        .then((res) => {
+          if (res.code === 200) {
+            this.sycgList = res.data.rows
+          }
+        })
+        Object.assign(this.form, record)
+        // setTimeout(() => {
+          Object.assign(this.form, {
+            wwxt: record.wwxt,
+            kh: kh,
+            lxr: record.lxr,
+            lxdh: record.lxdh,
+            shdz: record.shdz,
+            shrs: record.lxr + ',' + record.lxdh + ',' + record.shdz,
+            hkdd: '',
+            hkddurl: '',
+            zl: zl,
+            sycg: sycg,
+            ddmxList: record.mxList
+           })
+        // }, 5000)
+          }
+        })
+        .finally(() => {
+          this.spinning = false
+        })
+    },
+    handleReset(value) {
+      this.$refs['form'].resetFields()
+      this.form.ddmxList = []
+      this.data = []
+      this.queryFPKJ()
+    },
     changeHKDD() {
       this.form.hkdd = ''
       this.form.hkddurl = ''
@@ -615,13 +676,12 @@ export default {
         }
       }
         this.form.zl = this.form.zlArr.join('+')
-        let sycg = this.form.sycgmc
+        let sycg = this.form.sycg
         this.form.hkrq = moment(this.form.hkrq).format('YYYY-MM-DD')
         sycg = sycg.split(',')
         this.form.sycgid = sycg[0]
         this.form.sycgmc = sycg[1]
-        this.form.sjly = 'crm'
-        this.form.mbmc = this.mbmc
+        this.form.sjly = 'order'
         this.form.hkddList = []
         if (this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
@@ -632,7 +692,7 @@ export default {
             }
           }
         }
-        order.createOrder(this.form).then(res => {
+        order.createOrderPC(this.form).then(res => {
           if (res.code === 200) {
             this.$message.success('保存成功')
             this.clear()
@@ -646,7 +706,7 @@ export default {
     saveModal() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-        if (u.isEmptyStr(this.mbmc)) {
+        if (u.isEmptyStr(this.form.mbmc)) {
         this.$message.error('请输入模板名称！')
         return false
       }
@@ -682,13 +742,12 @@ export default {
         }
       }
         this.form.zl = this.form.zlArr.join('+')
-        let sycg = this.form.sycgmc
+        let sycg = this.form.sycg
         this.form.hkrq = moment(this.form.hkrq).format('YYYY-MM-DD')
         sycg = sycg.split(',')
         this.form.sycgid = sycg[0]
         this.form.sycgmc = sycg[1]
-        this.form.sjly = 'crm'
-        this.form.mbmc = this.mbmc
+        this.form.sjly = 'order'
         this.form.hkddList = []
         if (this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
@@ -699,10 +758,10 @@ export default {
             }
           }
         }
-        order.templateAdd(this.form).then(res => {
+        order.templateAdd(Object.assign({ mxList: this.form.ddmxList }, this.form)).then(res => {
           if (res.code === 200) {
             this.$message.success('模板保存成功')
-            this.mbmc = ''
+            this.form.mbmc = ''
             this.modalVisible = false
           } else {
             this.$message.error(res.message)
@@ -740,17 +799,30 @@ export default {
       this.$set(this.form.ddmxList, index, target)
       this.setDdzje()
     },
+    queryFHjl(obj) {
+      order
+        .examineManageDict(obj)
+        .then(res => {
+          if (res.code === 200) {
+            console.info(res.data)
+            if (res.data && res.data.totalRows > 0) {
+              this.form.fhjlmc = res.data.rows[0].rymc
+              this.form.fhjlid = res.data.rows[0].rynm
+              this.form.xslxbh = res.data.rows[0].xslx
+              this.form.khjlmc = res.data.rows[0].rymc
+              this.form.khjlid = res.data.rows[0].rynm
+              this.queryXSLX()
+            }
+            // this.data = res.data
+          }
+        })
+    },
     clear() {
       this.$refs['form'].resetFields()
       this.ddzje = 0
       this.data = []
       this.form.ddmxList = []
       this.shrs = ''
-      this.queryFHjl({ rynm: this.$store.state.user.info.account, wwxt: this.form.wwxt })
-      // 验证该发货经理是否有对应的ERP账套业务员编码
-      // this.check(this.form.('fhjlid'), '01', '001')
-      // this.querySHDZ()
-      this.queryFPKJ()
     },
     /**
          * 上传文件
@@ -806,6 +878,7 @@ export default {
       this.form.khnm = v[0]
       this.form.khbh = v[2]
       this.querySHDZ(this.form.khnm)
+      this.querySYCG(this.form.khnm)
     },
     newOk() {
       console.log(this.newZQ)
@@ -861,11 +934,10 @@ export default {
     },
     // 商业采购查询
     querySYCG () {
-      order.syzhDict({})
+      order.syzhDict({ sybm: this.form.khbh })
         .then((res) => {
           if (res.code === 200) {
             this.sycgList = res.data.rows
-            console.info(this.data)
           }
         })
         .catch((e) => {
@@ -908,21 +980,56 @@ export default {
          this.queryXSLX()
       }
     },
-    closeModal(type, record) {
+    async closeModal(type, record) {
       console.info('closeModal', type, record)
+      if (record) {
       if (type === 'product') {
         const obj = { khj: 0,
-    sl: '0',
-    je: '0.00',
-    js: '0.00',
-    dj: 0
-  }
+          sl: '0',
+          je: '0.00',
+          js: '0.00',
+          dj: 0
+        }
         Object.assign(obj, record)
         this.form.ddmxList.push(obj)
       } else if (type === 'modal') {
         console.info(record)
-        this.form = record
+        const kh = record.khnm + ';' + record.khmc + ';' + record.khbh
+        const sycg = record.sycgid + ',' + record.sycgmc
+        const zl = record.zl.split('+')
+        await shdz
+        .list({ khbh: record.khnm })
+        .then((res) => {
+          if (res.code === 200) {
+            this.data = res.data
+            console.info(this.data)
+            this.data.push({ id: '' })
+          }
+        })
+        await order.syzhDict({ sybm: record.khbh })
+        .then((res) => {
+          if (res.code === 200) {
+            this.sycgList = res.data.rows
+          }
+        })
+        Object.assign(this.form, record)
+        // setTimeout(() => {
+          Object.assign(this.form, {
+            wwxt: record.wwxt,
+            kh: kh,
+            lxr: record.lxr,
+            lxdh: record.lxdh,
+            shdz: record.shdz,
+            shrs: record.lxr + ',' + record.lxdh + ',' + record.shdz,
+            hkdd: '',
+            hkddurl: '',
+            zl: zl,
+            sycg: sycg,
+            ddmxList: record.mxList
+           })
+        // }, 5000)
       }
+    }
       this.showOrderModal = false
     },
     getHeight () {

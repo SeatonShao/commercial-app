@@ -7,12 +7,12 @@
       <a-row style="padding:  0 20px;margin: 0 40px;">
         <a-col :span="5"> <span class="title">订单号：</span>{{ data.ddh }}</a-col>
         <a-col :span="5"> <span class="title">订单日期：</span>{{ data.ddrq }}</a-col>
-        <a-col :span="7">
+        <a-col :span="9">
           <span class="title">客户名称：{{ data.khmc }}</span></a-col
         >
-        <a-col :span="7" v-if="data.khlxmc && data.khlxmc.indexOf('普药') >= 0">
-          <span class="title">二级商客户：{{ data.ejskhmc }}</span></a-col
-        >
+        <a-col :span="5">
+          <span class="title">订单总金额：</span><span class="amount">{{ data.ddzje }}￥</span>
+        </a-col>
       </a-row>
       <div class="search-wrapper">
         <h3>收货人信息</h3>
@@ -30,44 +30,11 @@
         <a-divider></a-divider>
         <h3>付款信息</h3>
         <a-row :gutter="gutter">
-          <a-col :span="8" :offset="2">
-            <span >订单总金额：</span><span class="amount">{{ data.ddzje }}￥</span
-            ></a-col
-          >
-        </a-row>
-        <a-row :gutter="gutter">
           <a-col :span="22" :offset="2">
-            {{ data.hkrq + '_' + data.skzh + '_' + data.hkje + '_' + data.hkfs + '_' + data.hkbz }}
-          </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-          <a-col :span="22" :offset="2">
-            汇款底单：<a-button type="link">{{ data.hkdd }}</a-button>
+            汇款底单：<a-button type="link" v-for="(item,index) in data.hkddList" :key="index" @click="showDD(item.fjlj)">{{ item.fjmc }}</a-button>
           </a-col>
         </a-row>
         <a-divider></a-divider>
-        <h3>其它信息</h3>
-        <a-row :gutter="gutter">
-          <a-col :span="6" :offset="2"> 发货经理：{{ data.fhjlmc }} </a-col>
-          <a-col :span="6"> 省份：{{ data.sfmc }} </a-col>
-          <a-col :span="6"> 制单人：{{ data.zdrmc }} </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-          <a-col :span="6" :offset="2"> 销售类型：{{ data.xslxmc }} </a-col>
-          <a-col :span="6"> 发票开具：{{ data.fpkj }} </a-col>
-          <a-col :span="6" v-if="data.xslxmc && data.xslxmc.indexOf('商务') >= 0">
-            商务发货类型：{{ data.swfhlx }}
-          </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-          <a-col :span="6" :offset="2"> 考核经理：{{ data.khjlmc }} </a-col>
-          <a-col :span="6"> 资料：{{ data.zl }} </a-col>
-          <a-col :span="6" v-if="data.khlxmc && data.khlxmc.indexOf('招商') >= 0"> CSO客户：{{ data.csokhmc }} </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-          <a-col :span="6" :offset="2"> 考核类型：{{ data.fhjlmc }} </a-col>
-          <a-col :span="6"> 商业采购：{{ data.sycg }} </a-col>
-        </a-row>
       </div>
       <div class="search-wrapper" v-for="(mx, index) in data.ddmxList" :key="index">
         <h3>产品清单</h3>
@@ -76,7 +43,7 @@
             <template slot="content">
               <a-timeline>
                 <a-timeline-item v-for="(item, i) in mx.ddlcrzList" :key="'gz'+i" v-show="item.syxs=='1'">
-                  <div><span style="color: rgba(24, 144, 255, 1);">{{ item.rzjdmc }}</span>{{ ': ' + item.jgms }}</div>
+                  <div><span style="color: rgba(24, 144, 255, 1);">{{ item.rzjdmc }}</span>{{ ': ' + (item.jgms?item.jgms:item.zdrmc) }}</div>
                   <div>{{ item.zdsj }}</div>
                 </a-timeline-item>
               </a-timeline>
@@ -126,6 +93,9 @@
         <img :src="fphm" alt="图片不存在" style="max-width: 99%"/>
       </a-spin>
     </a-modal>
+    <a-modal :visible="hkddVisible" title="查看" width="800px" :footer="null" @cancel="closeDD">
+      <img :src="url" alt="图片不存在" style="max-width: 99%"/>
+    </a-modal>
     <a-modal :visible="carouselVisiable" width="600px" title="查看电子合同" :footer="null" @cancel="carouselVisiable = false">
       <a-carousel arrows>
         <div slot="prevArrow" slot-scope="props" class="custom-slick-arrow" style="left: 10px;zIndex: 1">
@@ -151,11 +121,16 @@
 import order from '@/api/order'
 import moment from 'moment'
 import { mapActions } from 'vuex'
+const path = process.env.VUE_APP_FTP
+console.info(process.env.VUE_APP_API_BASE_URL)
+console.info(process.env.VUE_APP_FTP)
 export default {
   data() {
     return {
+      url: '',
       imgLoading: false,
       carouselVisiable: false,
+      hkddVisible: false,
       fpVisiable: false,
       fphm: '',
       spinning: false,
@@ -216,18 +191,6 @@ export default {
           width: 60
         },
         {
-          title: '考核价',
-          align: 'center',
-          dataIndex: 'khj',
-          width: 60
-        },
-        {
-          title: '政策信息',
-          align: 'center',
-          dataIndex: 'zcxx',
-          width: 120
-        },
-        {
           title: '状态',
           align: 'center',
           dataIndex: 'action',
@@ -252,6 +215,15 @@ export default {
     getStatus: order.getStatus
   },
   methods: {
+    showDD(fjlj) {
+      this.hkddVisible = true
+      console.info(path)
+      this.url = path + fjlj
+    },
+    closeDD() {
+      this.hkddVisible = false
+      this.url = ''
+    },
     showFP(fphm) {
       console.info(fphm)
       // this.fphm = 'http://' + location.host + '/order/invoiceView?fphm=' + fphm
@@ -319,6 +291,10 @@ export default {
     color: #000;
     font-size: 16px;
   }
+  .amount {
+    color: orange;
+    font-weight: 600;
+  }
 }
 .container .search-wrapper {
   border: solid 2px orange;
@@ -340,10 +316,7 @@ export default {
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
   }
-  .amount {
-    color: orange;
-    font-weight: 600;
-  }
+
   .popover {
     position: absolute;
     right: 0;

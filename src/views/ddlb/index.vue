@@ -9,7 +9,7 @@
         <a-tab-pane key="5" tab="已发货"> </a-tab-pane>
         <a-tab-pane key="6" tab="部分发货"> </a-tab-pane>
         <a-tab-pane key="7" tab="已取消"> </a-tab-pane>
-        <a-input placeholder="请输入订单号搜索" slot="tabBarExtraContent" :model="ddh" @pressEnter="search"/>
+        <a-input placeholder="请输入订单号搜索" slot="tabBarExtraContent" v-model="ddh" @pressEnter="search"/>
       </a-tabs>
       <div>
         <a-button @click="batchExport" :loading="batchExportLoading"><a-icon type="export"/>下载   </a-button>
@@ -25,27 +25,32 @@
         @change="handleTableChange"
       >
         <template slot="ddztaction" slot-scope="text, record">
-          <a-button :class="{ blue: record.ddzt != '7'&&record.ddzt != '10'&&record.ddzt != '11', green: record.ddzt == '7', orange: record.ddzt == '10', red: record.ddzt == '11'}">{{ record.ddzt|getStatus }}</a-button>
+          <a-button :class="{ blue: record.ddzt != '7'&&record.ddzt != '10'&&record.ddzt != '11', green: record.ddzt == '7', orange: record.ddzt == '10', red: record.ddzt == '11'}" style="width: 100%;">{{ record.ddzt|getStatus }}</a-button>
         </template>
         <template slot="gzxxaction" slot-scope="text, record, index">
           <a-button type="link" @click="show(record, index)">订单详情</a-button>
         </template>
-        <template slot="action" slot-scope="text, record, index">
-          <a-button type="primary" @click="newOrder(record, index)">再来一单</a-button>
-          <a-button type="danger" @click="cancelOrder(record, index)" v-if="record.ddzt=='1'">取消订单</a-button>
-          <a-button type="primary" @click="upload(record, index)" v-if="record.ddzt=='1'">上传底单</a-button>
+        <template slot="action" slot-scope="text, record">
+          <a-button type="primary" @click="newOrder(record.ddls)">再来一单</a-button>
+          <a-button type="danger" @click="cancelOrder(record)" v-if="record.ddzt=='1'">取消订单</a-button>
+          <a-button type="primary" @click="$refs.uploadHkdd.queryDetail(record.ddls)" v-if="record.ddzt=='1'">上传底单</a-button>
         </template>
       </a-table>
     </a-card>
+    <uploadHkdd ref="uploadHkdd" @closeUploadHkdd="closeUploadHkdd"></uploadHkdd>
   </div>
 </template>
 <script>
 import order from '@/api/order'
 import moment from 'moment'
-// import { yxzylxcMonthPage, yxzylxMonthExport } from '@/api/modular/main/yxzylxcmonth/yxzylxMonthManage'
+import uploadHkdd from './upload-hkdd.vue'
 import { mapActions } from 'vuex'
 // import { numberToCurrencyNo, numberToRoundCurrencyNo, dateFormat } from '@/api/modular/main/tool/numberToCurrencyNo'
 export default {
+  components: {
+    uploadHkdd
+  },
+
   data() {
     return {
       pagination: {
@@ -140,7 +145,7 @@ export default {
           align: 'center',
           dataIndex: 'action',
           scopedSlots: { customRender: 'action' },
-          width: 330
+          width: 300
         }
       ],
       tstyle: { 'padding-bottom': '0px', 'margin-bottom': '0px' },
@@ -151,7 +156,14 @@ export default {
     window.addEventListener('resize', this.getHeight)
     this.search()
   },
+  filters: {
+    getStatus: order.getStatus
+  },
   methods: {
+    closeUploadHkdd() {
+      console.info()
+      this.search()
+    },
             /**
              * 批量导出
              */
@@ -193,7 +205,7 @@ export default {
             this.showPagination && this.localPagination.pageSize || this.pageSize
         }
       )
-            order.ddlb(Object.assign(page, { ddzt: this.key, ddh: this.ddh })).then(res => {
+            order.ddlb(Object.assign(page, { ksfl: this.key, ddzt: '1', ddh: this.ddh })).then(res => {
               if (res.code === 200) {
                 this.data = res.data.rows
                 const pagination = { ...this.pagination }
@@ -217,21 +229,28 @@ export default {
         this.search()
       },
     show(record, index) {
-      this.$router.push({ path: '/dashboard/ddxq', query: { ddls: record.ddls } })
+      this.$router.push({ path: '/order/ddxq', query: { ddls: record.ddls } })
     },
-    newOrder(record, index) {
-      this.$router.push({ path: '/dashboard/cjdd2', query: { ddls: record.ddls } })
+    newOrder(ddls) {
+      if (this.$store.state.user.info.zhlx == '2') {
+        this.$router.push({ path: '/order/cjdd', query: { ddls: ddls } })
+      } else {
+        this.$router.push({ path: '/order/cjdd2', query: { ddls: ddls } })
+      }
     },
-    cancelOrder(index) {
-      // this.$router.push({ path: '/dashboard/ddxq', params: { id: this.data[index].ddh } })
-      this.$message.info('取消订单完成！')
-      order.cancelOrder({ lsbh: this.data.ddmxls }).then((res) => {
+    cancelOrder(record) {
+      // this.$router.push({ path: '/order/ddxq', params: { id: this.data[index].ddh } })
+      order.cancelOrder({ ddls: record.ddls }).then((res) => {
         console.info(res)
-        this.search()
+        if (res.code === 200) {
+          this.$message.info('取消订单完成！')
+          this.search()
+        } else {
+          this.$message.info('取消订单失败！')
+        }
       })
     },
     upload(index) {
-      // this.$router.push({ path: '/dashboard/ddxq', params: { id: this.data[index].ddh } })
       this.$message.info('上传底单完成！')
     },
     getHeight() {
@@ -259,6 +278,51 @@ export default {
 /deep/ .ant-table-tbody > tr > td {
   padding: 5px;
 }
+
+.orange {
+    border-color: rgba(255, 165, 0, 0.3);
+    background-color: rgba(255, 165, 0, 0.1);
+    border-radius: 3px;
+    color: rgba(255, 165, 0, 1);
+    padding: 0;
+    width: 100px;
+    margin: 0;
+    text-shadow: 0 -1px 0 rgba(255, 165, 0, 0.12);
+    box-shadow: 0 2px 0 rgba(255, 165, 0, 0.045);
+  }
+  .blue {
+    border-color: rgba(24, 144, 255, 0.3);
+    background-color: rgba(24, 144, 255, 0.1);
+    border-radius: 3px;
+    color: rgba(24, 144, 255, 1);
+    padding: 0;
+    width: 100px;
+    margin: 0;
+    text-shadow: 0 -1px 0 rgba(24, 144, 255, 0.12);
+    box-shadow: 0 2px 0 rgba(24, 144, 255, 0.045);
+  }
+  .green {
+    border-color: rgba(0, 128, 0, 0.3);
+    background-color: rgba(0, 128, 0, 0.1);
+    border-radius: 3px;
+    color: rgba(0, 128, 0, 1);
+    padding: 0;
+    width: 100px;
+    margin: 0;
+    text-shadow: 0 -1px 0 rgba(0, 128, 0, 0.12);
+    box-shadow: 0 2px 0 rgba(0, 128, 0, 0.045);
+  }
+  .red {
+    border-color: rgba(255, 0, 0, 0.3);
+    background-color: rgba(255, 0, 0, 0.1);
+    border-radius: 3px;
+    color: rgba(255, 0, 0, 1);
+    padding: 0;
+    width: 100px;
+    margin: 0;
+    text-shadow: 0 -1px 0 rgba(255, 0, 0, 0.12);
+    box-shadow: 0 2px 0 rgba(255, 0, 0, 0.045);
+  }
 .table-operator {
   margin-bottom: 18px;
 }

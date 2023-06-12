@@ -2,8 +2,10 @@ import request from '@/utils/request'
 
 const userApi = {
   Login: '/business/login',
+  LoginMobile: '/business/codeLogin ',
   Logout: '/logout',
-  ForgePassword: '/forge-password',
+  ForgePassword: '/forgotPassword',
+  EditPassword: '/business/editPassword',
   Register: '/auth/register',
   twoStepCode: '/auth/2step-code',
   SendSms: '/account/sms',
@@ -24,14 +26,78 @@ const userApi = {
  * @param parameter
  * @returns {*}
  */
-export function login (parameter) {
+ export function login (parameter) {
+  // 密码采用sm2加密传输密码
+  const sm2 = require('sm-crypto').sm2
+  const publicKey = '04298364ec840088475eae92a591e01284d1abefcda348b47eb324bb521bb03b0b2a5bc393f6b71dabb8f15c99a0050818b56b23f31743b93df9cf8948f15ddb54'
+  const encryptData = sm2.doEncrypt(parameter.password, publicKey, 1)
+  parameter.password = encryptData
+return request({
+  url: userApi.Login,
+  method: 'post',
+  data: parameter
+})
+}
+
+/**
+ * editPassword func
+ * parameter: {
+ *     yhzh: '',
+ *     yhmm: '',
+ *     dxyzm: true
+ * }
+ * @param parameter
+ * @returns {*}
+ */
+ export function editPassword (parameter) {
     // 密码采用sm2加密传输密码
     const sm2 = require('sm-crypto').sm2
     const publicKey = '04298364ec840088475eae92a591e01284d1abefcda348b47eb324bb521bb03b0b2a5bc393f6b71dabb8f15c99a0050818b56b23f31743b93df9cf8948f15ddb54'
-    const encryptData = sm2.doEncrypt(parameter.password, publicKey, 1)
-    parameter.password = encryptData
+    const encryptData = sm2.doEncrypt(parameter.yhmm, publicKey, 1)
+    parameter.yhmm = encryptData
+return request({
+  url: userApi.EditPassword,
+  method: 'post',
+  data: parameter
+})
+}
+
+/**
+ * ForgePassword func
+ * parameter: {
+ *     yhzh: '',
+ *     yhmm: '',
+ *     dxyzm: true
+ * }
+ * @param parameter
+ * @returns {*}
+ */
+ export function forgePassword (parameter) {
+    // 密码采用sm2加密传输密码
+    const sm2 = require('sm-crypto').sm2
+    const publicKey = '04298364ec840088475eae92a591e01284d1abefcda348b47eb324bb521bb03b0b2a5bc393f6b71dabb8f15c99a0050818b56b23f31743b93df9cf8948f15ddb54'
+    const encryptData = sm2.doEncrypt(parameter.yhmm, publicKey, 1)
+    parameter.yhmm = encryptData
+return request({
+  url: userApi.ForgePassword,
+  method: 'post',
+  data: parameter
+})
+}
+/**
+ * login func
+ * parameter: {
+ *     username: '',
+ *     password: '',
+ *     remember_me: true,
+ *     captcha: '12345'
+ * }
+ * @param parameter
+ * @returns {*}
+ */
+export function loginMobile (parameter) {
   return request({
-    url: userApi.Login,
+    url: userApi.LoginMobile,
     method: 'post',
     data: parameter
   })

@@ -1,11 +1,15 @@
 <template>
   <a-dropdown v-if="currentUser && currentUser.name" placement="bottomRight">
     <span class="ant-pro-account-avatar">
-      <a-avatar size="small" src="https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png" class="antd-pro-global-header-index-avatar" />
-      <span>{{ currentUser.name }}</span>
+      <!-- <a-avatar size="small" src="https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png" class="antd-pro-global-header-index-avatar" /> -->
+      <span>{{ currentUser.name+'【'+ symc +'】' }}</span>
     </span>
     <template v-slot:overlay>
       <a-menu class="ant-pro-drop-down menu" :selected-keys="[]">
+        <a-menu-item key="center" >
+          <a-icon type="user" />
+          关联商业：{{ symc }}
+        </a-menu-item>
         <!-- <a-menu-item v-if="menu" key="center" @click="handleToCenter">
           <a-icon type="user" />
           {{ $t('menu.account.center') }}
@@ -42,12 +46,25 @@ export default {
       default: true
     }
   },
+  data() {
+    return {
+      symc: ''
+    }
+  },
+  created() {
+    const list = this.$store.state.user.info.gxList
+    for (const i in list) {
+      if (list[i].sfmr == '1') {
+        this.symc = list[i].symc
+      }
+    }
+  },
   methods: {
     handleToCenter () {
       this.$router.push({ path: '/account/center' })
     },
     handleToSettings () {
-      this.$router.push({ path: '/dashboard/zhsz' })
+      this.$router.push({ path: '/order/zhsz' })
     },
     handleLogout (e) {
       Modal.confirm({
