@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { login, forgePassword, loginMobile, getInfo, logout } from '@/api/login'
+import { login, forgePassword, resetEditPassword, loginMobile, getInfo, logout } from '@/api/login'
 import { ACCESS_TOKEN, DICT_TYPE_TREE_DATA } from '@/store/mutation-types'
 import { welcome } from '@/utils/util'
 import { sysDictTypeTree } from '@/api/dictManage'
@@ -71,6 +71,15 @@ const user = {
           })
       })
     },
+    resetEditPassword ({ commit }, userInfo) {
+      return new Promise((resolve, reject) => {
+        resetEditPassword(userInfo).then(response => {
+            resolve(response.data)
+          }).catch(error => {
+            reject(error)
+          })
+      })
+    },
 
     // 获取用户信息
     GetInfo ({ commit }) {
@@ -79,7 +88,7 @@ const user = {
         getInfo().then(response => {
           // eslint-disable-next-line prefer-const
           let result = response.data
-          if (result.zhlx == '2') {
+          if (result.zhlx == '1') {
             // 显示订单1
             result.roleId = 'admin'
             result.role = roleObj1

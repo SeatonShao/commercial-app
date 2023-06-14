@@ -5,7 +5,7 @@
     width="800px"
     :confirmLoading="false"
     @ok="handleOk"
-    @cancel="closeModal">
+    @cancel="closeModal(null)">
     <div>
       <div class="search-wrapper">
         <a-row>
@@ -54,7 +54,7 @@ export default {
       selectedRows: [],
       selectedRowKeys: [],
       // queryParam: {},
-      queryParam: { userid: this.$route.query.userid },
+      queryParam: { mbmc: '' },
       // 表头
       columns: [
         {
@@ -88,6 +88,13 @@ export default {
   },
   watch: {
     showOrderModal(v) {
+      this.pagination = {
+        current: 1,
+        pageSize: 10,
+        total: 0
+      }
+      this.queryParam = { mbmc: '' }
+      this.data = []
       this.loadData()
     }
   },
@@ -123,7 +130,7 @@ export default {
           this.pageSize
       })
       order
-        .templatePage(Object.assign(page, { mbmc: this.queryParam.mbmc, zdrid: this.$store.state.user.info.syzhid }))
+        .templatePage(Object.assign(page, { mbmc: this.queryParam.mbmc, zdrid: this.$store.state.user.info.yhzh }))
         .then((res) => {
           if (res.code === 200) {
             this.data = res.data.rows

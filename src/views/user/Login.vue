@@ -2,6 +2,7 @@
   <div class="main">
     <a-form
       id="formLogin"
+      autocomplete="off"
       class="user-layout-login"
       ref="formLogin"
       :form="form"
@@ -19,6 +20,7 @@
             <a-input
               size="large"
               type="text"
+              autocomplete="off"
               placeholder="账号"
               v-decorator="[
                 'account',
@@ -131,6 +133,7 @@
 <script>
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
+import { scorePassword } from '@/utils/util'
 import { getSmsCaptcha, getCaptchaOpen } from '@/api/loginManage'
 import Verify from '@/components/verifition/Verify'
 
@@ -206,6 +209,22 @@ export default {
       this.customActiveKey = key
       // this.form.resetFields()
     },
+    handlePasswordLevel (value) {
+      console.log('scorePassword ; ', scorePassword(value))
+      if (value.length >= 6) {
+        if (scorePassword(value) >= 30) {
+          this.ls.set('passwordLevel', 0)
+        }
+        if (scorePassword(value) >= 60) {
+        this.ls.set('passwordLevel', 0)
+        }
+        if (scorePassword(value) >= 80) {
+        this.ls.set('passwordLevel', 0)
+        }
+      } else {
+        this.ls.set('passwordLevel', 0)
+      }
+    },
     handleSubmit (e) {
       e.preventDefault()
       const {
@@ -233,7 +252,7 @@ export default {
           delete loginParams.account
           loginParams.account = values.account
           loginParams.customActiveKey = customActiveKey
-
+          this.handlePasswordLevel(loginParams.password)
           if (this.tenantOpen) {
             loginParams.tenantCode = values.tenantCode
           }

@@ -42,7 +42,10 @@ router.beforeEach((to, from, next) => {
               })
               // 请求带有 redirect 重定向时，登录自动重定向到该地址
               const redirect = decodeURIComponent(from.query.redirect || to.path)
-              if (to.path === redirect) {
+              // 首次登录修改密码
+              if (res.data == '1') {
+                next({ path: '/order/zhsz', query: { msg: '必须重置密码才能访问其他页面！！！' }, replace: true })
+              } else if (to.path === redirect) {
                 // set the replace: true so the navigation will not leave a history record
                 next({ ...to, replace: true })
               } else {

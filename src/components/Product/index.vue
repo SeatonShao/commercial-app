@@ -12,8 +12,8 @@
         <a-row>
           <a-col>
             <a-month-picker format="YYYYMM" placeholder="" v-model="queryParam.cpmc" />
-            <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
-            <a-button style="margin-left: 8px" @click="() => (queryParam = {})">重置</a-button>
+            <a-button type="primary" @click="loadData">查询</a-button>
+            <a-button style="margin-left: 8px" @click="() => (queryParam = {cpmc:''})">重置</a-button>
           </a-col>
         </a-row>
       </div>
@@ -49,7 +49,7 @@ export default {
       advanced: false,
       // 查询参数
       // queryParam: {},
-      queryParam: { userid: this.$route.query.userid },
+      queryParam: { cpmc: '' },
       // 表头
       columns: [
         {
@@ -102,6 +102,13 @@ export default {
   },
   methods: {
     open() {
+      this.pagination = {
+        current: 1,
+        pageSize: 10,
+        total: 0
+      }
+      this.queryParam = { cpmc: '' }
+      this.data = []
       this.visible = true
       this.loadData()
     },
@@ -118,7 +125,7 @@ export default {
           this.pageSize
       })
       order
-        .productDict(Object.assign(page, { khmc: this.queryParam.queryParam }))
+        .productDict(Object.assign(page, { cpmc: this.queryParam.cpmc }))
         .then((res) => {
           if (res.code === 200) {
             this.data = res.data.rows

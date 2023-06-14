@@ -249,7 +249,7 @@ export default {
           title: '件数',
           align: 'center',
           dataIndex: 'js',
-          customRender: (text, record, index) => text + '元',
+          customRender: (text, record, index) => text + '件',
           width: 100
         },
         {
@@ -395,8 +395,8 @@ export default {
           }
           this.form.sjly = 'order'
           console.info(this.$store.state.user)
-          this.form.zdrid = this.$store.state.user.info.yhmc
-          this.form.zdrmc = this.$store.state.user.info.syzhid
+          this.form.zdrid = this.$store.state.user.info.yhzh
+          this.form.zdrmc = this.$store.state.user.info.yhmc
         if (this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
           const hkddurl = this.form.hkddurl.split(';')
@@ -456,8 +456,8 @@ export default {
             }
           }
           this.form.sjly = 'order'
-          this.form.zdrid = this.$store.state.user.info.yhmc
-          this.form.zdrmc = this.$store.state.user.info.syzhid
+          this.form.zdrid = this.$store.state.user.info.yhzh
+          this.form.zdrmc = this.$store.state.user.info.yhmc
         if (this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
           const hkddurl = this.form.hkddurl.split(';')

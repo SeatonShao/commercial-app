@@ -537,7 +537,7 @@ export default {
         khjlid: '',
         ddmxList: [],
         zdrmc: this.$store.state.user.info.yhmc,
-        zdrid: this.$store.state.user.info.syzhid,
+        zdrid: this.$store.state.user.info.yhzh,
         khjlmc: '',
         xslxbh: '',
         xslxmc: '',

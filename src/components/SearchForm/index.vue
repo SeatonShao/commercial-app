@@ -314,7 +314,7 @@
               console.info(e)
             })
           } else if (this.formName === 'qrrmc') {
-            order.personnelDict(Object.assign(page, { qrrmc: this.queryParam.queryParam })).then(res => {
+            order.personnelDict(Object.assign(page, { rymc: this.queryParam.queryParam })).then(res => {
               if (res.code === 200) {
                 this.data = res.data.rows
                 const pagination = { ...this.pagination }

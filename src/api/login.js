@@ -5,6 +5,7 @@ const userApi = {
   LoginMobile: '/business/codeLogin ',
   Logout: '/logout',
   ForgePassword: '/forgotPassword',
+  ResetEditPassword: '/business/resetEditPassword',
   EditPassword: '/business/editPassword',
   Register: '/auth/register',
   twoStepCode: '/auth/2step-code',
@@ -57,6 +58,29 @@ return request({
     parameter.yhmm = encryptData
 return request({
   url: userApi.EditPassword,
+  method: 'post',
+  data: parameter
+})
+}
+
+/**
+ * resetEditPassword func
+ * parameter: {
+ *     yhzh: '',
+ *     yhmm: '',
+ *     dxyzm: true
+ * }
+ * @param parameter
+ * @returns {*}
+ */
+ export function resetEditPassword (parameter) {
+    // 密码采用sm2加密传输密码
+    const sm2 = require('sm-crypto').sm2
+    const publicKey = '04298364ec840088475eae92a591e01284d1abefcda348b47eb324bb521bb03b0b2a5bc393f6b71dabb8f15c99a0050818b56b23f31743b93df9cf8948f15ddb54'
+    const encryptData = sm2.doEncrypt(parameter.yhmm, publicKey, 1)
+    parameter.yhmm = encryptData
+return request({
+  url: userApi.ResetEditPassword,
   method: 'post',
   data: parameter
 })

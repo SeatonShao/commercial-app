@@ -232,7 +232,7 @@ export default {
       this.$router.push({ path: '/order/ddxq', query: { ddls: record.ddls } })
     },
     newOrder(ddls) {
-      if (this.$store.state.user.info.zhlx == '2') {
+      if (this.$store.state.user.info.zhlx == '1') {
         this.$router.push({ path: '/order/cjdd', query: { ddls: ddls } })
       } else {
         this.$router.push({ path: '/order/cjdd2', query: { ddls: ddls } })
