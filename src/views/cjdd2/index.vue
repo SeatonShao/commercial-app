@@ -682,7 +682,7 @@ export default {
         sycg = sycg.split(',')
         this.form.sycgid = sycg[0]
         this.form.sycgmc = sycg[1]
-        this.form.sjly = 'order'
+        this.form.sjly = 'order2'
         this.form.hkddList = []
         if (this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')

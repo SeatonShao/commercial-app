@@ -19,24 +19,6 @@
             </div>
           </div>
         </template>
-        <a-form-item>
-          <a-input-password
-            size="large"
-            @click="handlePasswordInputClick"
-            :placeholder="$t('user.register.password.placeholder')"
-            v-decorator="['password', {rules: [{ required: true, message: $t('user.password.required') }, { validator: this.handlePasswordLevel }], validateTrigger: ['change', 'blur']}]"
-          ></a-input-password>
-        </a-form-item>
-      </a-popover>
-
-      <a-form-item>
-        <a-input-password
-          size="large"
-          :placeholder="$t('user.register.confirm-password.placeholder')"
-          v-decorator="['password2', {rules: [{ required: true, message: $t('user.password.required') }, { validator: this.handlePasswordCheck }], validateTrigger: ['change', 'blur']}]"
-        ></a-input-password>
-      </a-form-item>
-
       <a-form-item>
         <a-input size="large" :placeholder="$t('user.login.mobile.placeholder')" v-decorator="['account', {rules: [{ required: true, message: $t('user.phone-number.required'), pattern: /^1[3456789]\d{9}$/ }, { validator: this.handlePhoneCheck } ], validateTrigger: ['change', 'blur'] }]">
         </a-input>
@@ -65,7 +47,23 @@
             v-text="!state.smsSendBtn && $t('user.register.get-verification-code')||(state.time+' s')"></a-button>
         </a-col>
       </a-row>
+      <a-form-item>
+          <a-input-password
+            size="large"
+            @click="handlePasswordInputClick"
+            :placeholder="$t('user.register.password.placeholder')"
+            v-decorator="['password', {rules: [{ required: true, message: $t('user.password.required') }, { validator: this.handlePasswordLevel }], validateTrigger: ['change', 'blur']}]"
+          ></a-input-password>
+        </a-form-item>
+      </a-popover>
 
+      <a-form-item>
+        <a-input-password
+          size="large"
+          :placeholder="$t('user.register.confirm-password.placeholder')"
+          v-decorator="['password2', {rules: [{ required: true, message: $t('user.password.required') }, { validator: this.handlePasswordCheck }], validateTrigger: ['change', 'blur']}]"
+        ></a-input-password>
+      </a-form-item>
       <a-form-item>
         <a-button
           size="large"
@@ -289,18 +287,17 @@ export default {
     font-family: '幼圆';
     font-size: 24px;
     font-weight: 700;
-    padding: 24px 0 12px 0 ;
+    padding: 24px 0 36px 0 ;
     color: #024bb1;
     letter-spacing: 1px;
   }
   .tabtitle{
-    letter-spacing: 6px;
-    font-weight: 500;
-    font-size: 20px;
+    font-weight: 600;
+    font-size: 16px;
     color: #444;
-    text-align: center;
+    text-align: left;
     width: 100%;
-    padding: 0 0 24px 0 ;
+    padding: 0 0 0 0 ;
  }
   /deep/ .ant-input-affix-wrapper{
 
