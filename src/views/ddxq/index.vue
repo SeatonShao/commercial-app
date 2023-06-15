@@ -122,8 +122,6 @@ import order from '@/api/order'
 import moment from 'moment'
 import { mapActions } from 'vuex'
 const path = process.env.VUE_APP_FTP
-console.info(process.env.VUE_APP_API_BASE_URL)
-console.info(process.env.VUE_APP_FTP)
 export default {
   data() {
     return {

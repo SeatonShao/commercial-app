@@ -40,7 +40,7 @@ export const asyncRouterMap = [
             path: '/order/cjdd2',
             name: 'cjdd2',
             component: () => import('@/views/cjdd2'),
-            meta: { title: 'menu.dashboard.cjdd2', keepAlive: false, permission: ['dd2'] }
+            meta: { title: 'menu.dashboard.cjdd2', keepAlive: false, permission: ['dd'] }
           },
           {
             path: '/order/ddlb/',

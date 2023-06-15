@@ -1,8 +1,9 @@
 <template>
   <div class="main">
+    <div class="title">罗欣商业订单平台</div>
     <a-form
       id="formLogin"
-      autocomplete="off"
+      autocomplete="new-password"
       class="user-layout-login"
       ref="formLogin"
       :form="form"
@@ -14,55 +15,53 @@
         @change="handleTabClick"
       >
         <a-tab-pane key="tab1" tab="账号密码登录">
-          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="this.accountLoginErrMsg" />
+          <a-alert v-if="isLoginError" type="error" showIcon :message="this.accountLoginErrMsg" />
+          <div class="tabtitle">账号密码登录</div>
 
           <a-form-item>
             <a-input
               size="large"
               type="text"
-              autocomplete="off"
+              autocomplete="false"
               placeholder="账号"
               v-decorator="[
                 'account',
-                { initialValue:'17861617982', rules: [{ required: true, message: '请输入帐户名' }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
+                { initialValue:'', rules: [{ required: true, message: '请输入帐户名' }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
               ]"
             >
-              <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input>
           </a-form-item>
 
           <a-form-item>
-            <a-input
+            <a-input-password
               size="large"
               type="password"
               autocomplete="false"
               placeholder="密码"
               v-decorator="[
                 'password',
-                { initialValue:'123456', rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
+                { initialValue:'', rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
               ]"
             >
-              <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
-            </a-input>
+            </a-input-password>
           </a-form-item>
         </a-tab-pane>
         <a-tab-pane key="tab2" tab="手机号登录">
-          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="this.accountLoginErrMsg" />
+          <a-alert v-if="isLoginError" type="error" showIcon :message="this.accountLoginErrMsg" />
+          <div class="tabtitle">手机号登录</div>
           <a-form-item>
             <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {initialValue: '16653966066', rules: [{ required: true, pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
-              <a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input>
           </a-form-item>
 
           <a-row :gutter="16">
-            <a-col class="gutter-row" :span="16">
+            <a-col class="gutter-row" :span="14">
               <a-form-item>
                 <a-input size="large" type="text" placeholder="验证码" v-decorator="['captcha', {rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur'}]">
-                  <a-icon slot="prefix" type="mail" :style="{ color: 'rgba(0,0,0,.25)' }"/>
                 </a-input>
               </a-form-item>
             </a-col>
-            <a-col class="gutter-row" :span="8">
+            <a-col class="gutter-row" :span="10">
               <a-button
                 class="getCaptcha"
                 tabindex="-1"
@@ -84,7 +83,7 @@
         >忘记密码</router-link>
       </a-form-item>
 
-      <a-form-item>
+      <a-form-item style="margin-bottom: 0;">
         <Verify
           @success="verifySuccess"
           :mode="'pop'"
@@ -94,7 +93,7 @@
         ></Verify>
       </a-form-item>
 
-      <a-form-item style="margin-top:24px">
+      <a-form-item >
         <a-button
           size="large"
           type="primary"
@@ -120,7 +119,11 @@
       </div>
       -->
     </a-form>
-
+    <div class="footer">
+      <div class="copyright">
+        Copyright © 2021 <a target="_blank" href="http://www.luoxin.cn">罗欣药业</a>
+      </div>
+    </div>
     <two-step-captcha
       v-if="requiredTwoStepCaptcha"
       :visible="stepCaptchaVisible"
@@ -252,7 +255,7 @@ export default {
           delete loginParams.account
           loginParams.account = values.account
           loginParams.customActiveKey = customActiveKey
-          this.handlePasswordLevel(loginParams.password)
+          // this.handlePasswordLevel(loginParams.password)
           if (this.tenantOpen) {
             loginParams.tenantCode = values.tenantCode
           }
@@ -327,14 +330,14 @@ export default {
       })
     },
     loginSuccess (res) {
-      this.$router.push({ path: '/' })
-      this.isLoginError = false
-      // 加载字典所有字典到缓存中
-      this.dictTypeData().then((res) => { })
+        this.$router.push({ path: '/' })
+        this.isLoginError = false
+        // 加载字典所有字典到缓存中
+        this.dictTypeData().then((res) => { })
     },
     requestFailed (err) {
-      console.info(err)
-      this.accountLoginErrMsg = err
+      console.info('error', err)
+      this.accountLoginErrMsg = err.message
       this.isLoginError = true
     }
   }
@@ -342,6 +345,67 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.main{
+  min-width: 260px;
+  width: 368px;
+  margin-left: 61.8%;
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: 12px;
+  padding: 40px 40px 20px 40px ;
+  input:focus {
+      border-top: none;
+      box-shadow: none;
+    }
+  .title{
+    width: 100%;
+    text-align: center;
+    font-family: '幼圆';
+    font-size: 24px;
+    font-weight: 700;
+    padding: 24px;
+    letter-spacing: 1px;
+    color: #024bb1;
+  }
+ .tabtitle{
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    padding: 12px 0 0 0 ;
+ }
+  /deep/ .ant-input-affix-wrapper{
+
+    background-color: rgba(255, 255, 255, 1);
+  }
+  /deep/ .ant-input{
+    border-top:none;
+    border-left: none;
+    border-right: none;
+    background-color: rgba(255, 255, 255, 1);
+  }
+  .footer {
+        width: 100%;
+        padding: 0 16px;
+        margin: 48px 0 24px;
+        text-align: center;
+
+        .links {
+          margin-bottom: 8px;
+          font-size: 16px;
+          a {
+            color: rgba(0, 0, 0, 0.45);
+            transition: all 0.3s;
+            &:not(:last-child) {
+              margin-right: 40px;
+            }
+          }
+        }
+        .copyright {
+          color: rgba(0, 0, 0, 0.45);
+          font-size: 16px;
+          font-weight: 550;
+        }
+      }
+}
 .user-layout-login {
   label {
     font-size: 14px;

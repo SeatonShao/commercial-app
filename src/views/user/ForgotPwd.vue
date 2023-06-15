@@ -1,6 +1,7 @@
 <template>
   <div class="main user-layout-register">
-    <h3><span></span></h3>
+    <div class="title">罗欣商业订单平台</div>
+    <div class="tabtitle">重置密码</div>
     <a-form ref="formRegister" :form="form" id="formRegister">
 
       <a-popover
@@ -49,14 +50,13 @@
           </a-input-group>-->
 
       <a-row :gutter="16">
-        <a-col class="gutter-row" :span="16">
+        <a-col class="gutter-row" :span="14">
           <a-form-item>
             <a-input size="large" type="text" :placeholder="$t('user.login.mobile.verification-code.placeholder')" v-decorator="['captcha', {rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur'}]">
-              <a-icon slot="prefix" type="mail" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input>
           </a-form-item>
         </a-col>
-        <a-col class="gutter-row" :span="8">
+        <a-col class="gutter-row" :span="10">
           <a-button
             class="getCaptcha"
             size="large"
@@ -80,6 +80,11 @@
       </a-form-item>
 
     </a-form>
+    <div class="footer">
+      <div class="copyright">
+        Copyright © 2021 <a target="_blank" href="http://www.luoxin.cn">罗欣药业</a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -266,7 +271,71 @@ export default {
   }
 }
 </script>
-<style lang="less">
+<style lang="less" scoped>
+.main{
+  min-width: 260px;
+  width: 368px;
+  margin-left: 61.8%;
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: 12px;
+  padding: 40px 40px 20px 40px ;
+  input:focus {
+      border-top: none;
+      box-shadow: none;
+    }
+  .title{
+    width: 100%;
+    text-align: center;
+    font-family: '幼圆';
+    font-size: 24px;
+    font-weight: 700;
+    padding: 24px 0 12px 0 ;
+    color: #024bb1;
+    letter-spacing: 1px;
+  }
+  .tabtitle{
+    letter-spacing: 6px;
+    font-weight: 500;
+    font-size: 20px;
+    color: #444;
+    text-align: center;
+    width: 100%;
+    padding: 0 0 24px 0 ;
+ }
+  /deep/ .ant-input-affix-wrapper{
+
+    background-color: rgba(255, 255, 255, 1);
+  }
+  /deep/ .ant-input{
+    border-top:none;
+    border-left: none;
+    border-right: none;
+    background-color: rgba(255, 255, 255, 1);
+  }
+  .footer {
+        width: 100%;
+        padding: 0 16px;
+        margin: 48px 0 24px;
+        text-align: center;
+
+        .links {
+          margin-bottom: 8px;
+          font-size: 16px;
+          a {
+            color: rgba(0, 0, 0, 0.45);
+            transition: all 0.3s;
+            &:not(:last-child) {
+              margin-right: 40px;
+            }
+          }
+        }
+        .copyright {
+          color: rgba(0, 0, 0, 0.45);
+          font-size: 16px;
+          font-weight: 550;
+        }
+      }
+}
   .user-register {
 
     &.error {
@@ -288,8 +357,6 @@ export default {
       background-color: #fff;
     }
   }
-</style>
-<style lang="less" scoped>
   .user-layout-register {
 
     & > h3 {

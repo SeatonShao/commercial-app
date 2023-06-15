@@ -42,19 +42,27 @@ const user = {
       return new Promise((resolve, reject) => {
         if (userInfo.customActiveKey === 'tab1') {
           login(userInfo).then(response => {
-            const result = response.data
-            Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
-            commit('SET_TOKEN', result)
-            resolve()
+            if (response && response.code === 200) {
+              const result = response.data
+              Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
+              commit('SET_TOKEN', result)
+              resolve()
+            } else {
+              reject(new Error(response.message))
+            }
           }).catch(error => {
             reject(error)
           })
         } else {
           loginMobile({ account: userInfo.mobile, code: userInfo.captcha }).then(response => {
+            if (response && response.code === 200) {
             const result = response.data
             Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
             commit('SET_TOKEN', result)
             resolve()
+          } else {
+            reject(new Error(response.message))
+          }
           }).catch(error => {
             reject(error)
           })

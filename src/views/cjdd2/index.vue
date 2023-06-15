@@ -209,7 +209,7 @@
             </a-col>
           </a-row>
           <a-row :gutter="gutter">
-            <a-col :span="7" :offset="2">
+            <a-col :span="9" :offset="2">
               <a-form-model-item label="汇款底单：" prop="hkdd" >
                 <a-input-search
                   read-only
@@ -223,7 +223,7 @@
                 </a-input-search>
               </a-form-model-item>
             </a-col>
-            <a-col :span="2">
+            <a-col :span="2" >
               <a-upload
                 :multiple="true"
                 accept="image/*"
@@ -232,11 +232,12 @@
                 :beforeUpload="beforeUpload"
                 :showUploadList="false"
                 name="file"
+                style="margin-top: 5px;display:block;"
               >
-                <a-button >选择文件 </a-button>
+                <a-button>选择文件 </a-button>
               </a-upload>
             </a-col>
-            <a-col :span="9" offset="2">
+            <a-col :span="9">
               <a-form-model-item label="汇款日期：" prop="hkrq">
                 <a-date-picker mode="date" v-model="form.hkrq" :style="dropdownStyle" />
               </a-form-model-item>
@@ -382,7 +383,7 @@ export default {
         sfmc: ['sfmc', 'sfbh'],
         xslxmc: ['xslxmc', 'xslxbh'],
         khlxmc: ['khlxmc', 'khlxbh'],
-        csokhmc: ['csokhmc', 'csokhbh'],
+        csokhmc: ['csokhmc', 'csokhbh', 'csolxfs'],
         khmc: ['khmc', 'khbh', 'khnm'],
         ejskhmc: ['ejskhmc', 'ejskhbh', 'ejskhnm']
       },

@@ -231,7 +231,7 @@
               console.info(e)
             })
           } else if (this.formName === 'xslxmc' || this.formName === 'khlxmc') {
-            order.salesTypeDict(Object.assign(page, { khmc: this.queryParam.queryParam })).then(res => {
+            order.salesTypeDict(Object.assign(page, { lxmc: this.queryParam.queryParam })).then(res => {
               if (res.code === 200) {
                 this.data = res.data.rows
                 const pagination = { ...this.pagination }
@@ -255,7 +255,7 @@
               console.info(e)
             })
           } else if (this.formName === 'sfmc') {
-            order.provinceDict(Object.assign(page, { khmc: this.queryParam.queryParam })).then(res => {
+            order.provinceDict(Object.assign(page, { sfmc: this.queryParam.queryParam })).then(res => {
               if (res.code === 200) {
                 this.data = res.data.rows
                 const pagination = { ...this.pagination }
@@ -374,7 +374,7 @@
               } else if (this.formName === 'sfmc') {
                 vm.$emit('ok', { 'obj': { sfmc: record.sfmc, sfbh: record.sfbh }, 'formName': this.formName })
               } else if (this.formName === 'csokhmc') {
-                vm.$emit('ok', { 'obj': { csokhmc: record.khmc, csobhbh: record.khbh, csokhnm: record.khnm }, 'formName': this.formName })
+                vm.$emit('ok', { 'obj': { csokhmc: record.khmc, csobhbh: record.khbh, csokhnm: record.khnm, csolxfs: record.lxdh }, 'formName': this.formName })
               } else if (this.formName === 'qrrmc') {
                 vm.$emit('ok', { 'obj': { qrrmc: record.rymc, qrrid: record.rynm }, 'formName': this.formName })
               } else if (this.formName === 'xslxmc') {
