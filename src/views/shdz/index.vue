@@ -66,7 +66,7 @@
       }
     },
     setDefault(index) {
-      if (this.data[index].mrdz == 'true') {
+      if (this.data[index].mrdz == '1') {
        this.$message.warn('必须有一个默认地址！')
        return
      }

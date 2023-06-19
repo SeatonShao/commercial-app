@@ -11,7 +11,7 @@
       <div class="search-wrapper">
         <a-row>
           <a-col>
-            <a-month-picker format="YYYYMM" placeholder="" v-model="queryParam.cpmc" />
+            <a-input format="YYYYMM" placeholder="" v-model="queryParam.cpmc" style="display: inline-block; width: 300px;"/>
             <a-button type="primary" @click="loadData">查询</a-button>
             <a-button style="margin-left: 8px" @click="() => (queryParam = {cpmc:''})">重置</a-button>
           </a-col>

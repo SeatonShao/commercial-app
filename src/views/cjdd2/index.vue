@@ -927,6 +927,9 @@ export default {
             this.form.xslxbh = record.lxbh
             this.form.khlxmc = record.lxmc
             this.form.khlxbh = record.lxbh
+            if (record.lxmc && record.lxmc.indexOf('-') >= 0) {
+              this.querySF(record.lxmc.substring(record.lxmc.indexOf('-'), record.lxmc.length))
+            }
           }
         })
         .catch((e) => {
@@ -943,6 +946,16 @@ export default {
         })
         .catch((e) => {
           console.info(e)
+        })
+    },
+    // 省份查询
+    querySF (sfmc) {
+      order.provinceDict({ 'sfmc': sfmc })
+        .then((res) => {
+          if (res.code && res.code === 200 && res.data.rows.length > 0) {
+            this.form.sfbh = res.data.rows[0].sfbh
+            this.form.sfmc = res.data.rows[0].sfmc
+          }
         })
     },
     queryFPKJ () {
@@ -985,14 +998,42 @@ export default {
       console.info('closeModal', type, record)
       if (record) {
       if (type === 'product') {
-        const obj = { khj: 0,
-          sl: '0',
-          je: '0.00',
-          js: '0.00',
-          dj: 0
-        }
+        order.productDetail({
+            wwxt: this.form.wwxt,
+            cpnm: record.cpnm,
+            xslxbh: this.form.xslxbh
+          })
+            .then(res => {
+              record.mnkcsl = res.data.mnkcsl
+              record.lhkcsl = res.data.lhkcsl
+              record.kcqk = res.data.kcqk
+              record.jgzc = res.data.jgzc
+              record.khj = res.data.khj
+            })
+            .finally(() => {
+              const obj = {
+                cpnm: record.cpnm,
+                cpbm: record.cpbm,
+                cpmc: record.cpmc,
+                bzgg: record.bzgg,
+                jldw: record.jldw,
+                jzl: record.jzl,
+                scqymc: record.scqymc,
+                scqybh: record.scqybh,
+                wwxt: record.wwxt,
+                mnkcsl: record.mnkcsl,
+                lhkcsl: record.lhkcsl,
+                kcqk: record.kcqk,
+                jgzc: record.jgzc,
+                khj: 0,
+                sl: '0',
+                je: '0.00',
+                js: '0.00',
+                dj: 0
+              }
         Object.assign(obj, record)
         this.form.ddmxList.push(obj)
+      })
       } else if (type === 'modal') {
         console.info(record)
         const kh = record.khnm + ';' + record.khmc + ';' + record.khbh

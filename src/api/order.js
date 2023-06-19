@@ -161,6 +161,19 @@ export default {
       params: parameter
     })
   },
+    /**
+   * 产品信息查询
+   *
+   * @author xiao
+   * @Date 2023-05-16 14:48:35
+   */
+     productDetail(parameter) {
+      return axios({
+        url: '/productDetail/page',
+        method: 'get',
+        params: parameter
+      })
+    },
   /**
    * 订单详情查询
    *
