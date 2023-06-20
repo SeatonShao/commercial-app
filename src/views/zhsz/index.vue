@@ -12,8 +12,31 @@
         </div>
       </div>
     </a-card>
-    <a-modal title="重置密码" :visible="modalVisible" :footer="null" @cancel="modalVisible = false">
-      <a-form ref="formRegister" autocomplete="off" :form="form" id="formRegister">
+    <a-modal title="重置密码" :visible="modalVisible" :footer="null" @cancel="modalVisible = false" v-if="$store.state.user.info.sfcz != '1'">
+      <a-form ref="edit" autocomplete="off" :form="form" id="formRegister">
+        <a-alert v-if="isLoginError" type="error" showIcon :message="this.accountLoginErrMsg" />
+        <div class="tabtitle">手机号登录</div>
+        <a-form-item>
+          <a-input size="large" type="text" placeholder="手机号" read-only v-decorator="['mobile', {initialValue: $store.state.user.info.yhzh, rules: [{ required: true, pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
+          </a-input>
+        </a-form-item>
+        <a-row :gutter="16">
+          <a-col class="gutter-row" :span="14">
+            <a-form-item>
+              <a-input size="large" type="text" placeholder="验证码" v-decorator="['captcha', {rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur'}]">
+              </a-input>
+            </a-form-item>
+          </a-col>
+          <a-col class="gutter-row" :span="10">
+            <a-button
+              class="getCaptcha"
+              tabindex="-1"
+              :disabled="state.smsSendBtn"
+              @click.stop.prevent="getCaptcha"
+              v-text="!state.smsSendBtn && '获取验证码' || (state.time+' s')"
+            ></a-button>
+          </a-col>
+        </a-row>
         <a-form-item>
           <a-input-password
             size="large"
@@ -65,7 +88,65 @@
             :loading="registerBtn"
             @click.stop.prevent="handleSubmit"
             :disabled="registerBtn"
-            >确定
+          >确定
+          </a-button>
+        </a-form-item>
+      </a-form>
+    </a-modal>
+    <a-modal title="重置密码" :visible="modalVisible" :footer="null" @cancel="modalVisible = false" v-else>
+      <a-form ref="formRegister" autocomplete="off" :form="form" id="formRegister">
+        <a-form-item>
+          <a-input-password
+            size="large"
+            autocomplete="off"
+            @click="handlePasswordInputClick"
+            :placeholder="$t('user.register.password.placeholder')"
+            v-decorator="[
+              'password',
+              {
+                rules: [
+                  { required: true, message: $t('user.password.required') },
+                  { validator: this.handlePasswordLevel }
+                ],
+                validateTrigger: ['change', 'blur']
+              }
+            ]"
+          ></a-input-password>
+        </a-form-item>
+        <div :style="{ width: '100%', marginBottom: '15px' }" v-show="state.passwordLevelChecked">
+          <div :class="['user-register', passwordLevelClass]">{{ $t(passwordLevelName) }}</div>
+          <a-progress :percent="state.percent" :showInfo="false" :strokeColor="passwordLevelColor" />
+          <div style="margin-top: 10px">
+            <span>{{ $t('user.register.password.popover-message') }} </span>
+          </div>
+        </div>
+        <a-form-item>
+          <a-input-password
+            size="large"
+            autocomplete="false"
+            :placeholder="$t('user.register.confirm-password.placeholder')"
+            v-decorator="[
+              'password2',
+              {
+                rules: [
+                  { required: true, message: $t('user.password.required') },
+                  { validator: this.handlePasswordCheck }
+                ],
+                validateTrigger: ['change', 'blur']
+              }
+            ]"
+          ></a-input-password>
+        </a-form-item>
+        <a-form-item>
+          <a-button
+            size="large"
+            type="primary"
+            htmlType="submit"
+            class="register-button"
+            :loading="registerBtn"
+            @click.stop.prevent="handleSubmit2"
+            :disabled="registerBtn"
+          >确定
           </a-button>
         </a-form-item>
       </a-form>
@@ -74,6 +155,7 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
+import { resetEditPassword, ePassword } from '@/api/login'
 import { scorePassword } from '@/utils/util'
 import { getSmsCaptcha } from '@/api/loginManage'
 const levelNames = {
@@ -104,6 +186,7 @@ export default {
       // 高级搜索 展开/关闭
       // 表头
       data: [],
+      isLoginError: false,
       tstyle: { 'padding-bottom': '0px', 'margin-bottom': '0px' },
       state: {
         time: 60,
@@ -129,6 +212,11 @@ export default {
   },
   created() {
     window.addEventListener('resize', this.getHeight)
+    console.info(this.$store.state.user.info.sfcz)
+    if (this.$store.state.user.info.sfcz == '1') {
+      this.modalVisible = true
+    }
+    // this.$store.commit('SET_SFCZ', '1')
   },
   watch: {
     'state.passwordLevel'(val) {
@@ -157,7 +245,7 @@ export default {
     getHeight() {
       this.tableHeight = window.innerHeight - 205
     },
-    ...mapActions(['Login', 'Logout', 'resetEditPassword']),
+    ...mapActions(['Login', 'Logout']),
     /**
      * 编辑
      */
@@ -185,21 +273,56 @@ export default {
 
       callback()
     },
+    getCaptcha (e) {
+      e.preventDefault()
+      const { form: { validateFields }, state } = this
+
+      validateFields(['mobile'], { force: true }, (err, values) => {
+        if (!err) {
+          state.smsSendBtn = true
+
+          const interval = window.setInterval(() => {
+            if (state.time-- <= 0) {
+              state.time = 60
+              state.smsSendBtn = false
+              window.clearInterval(interval)
+            }
+          }, 1000)
+
+          const hide = this.$message.loading('验证码发送中..', 0)
+          getSmsCaptcha({ phoneNumber: values.mobile, type: 1 }).then(res => {
+            setTimeout(hide, 2500)
+            // this.$notification['success']({
+            //   message: '提示',
+            //   description: '验证码获取成功，您的验证码为：' + res.result.captcha,
+            //   duration: 8
+            // })
+          }).catch(err => {
+            setTimeout(hide, 1)
+            clearInterval(interval)
+            state.time = 60
+            state.smsSendBtn = false
+            this.requestFailed(err)
+          })
+        }
+      })
+    },
     handleSubmit() {
       const {
         form: { validateFields },
         state,
-        $router,
-        resetEditPassword
+        $router
       } = this
       validateFields({ force: true }, (err, values) => {
+        console.info(err)
         if (!err) {
           state.passwordLevelChecked = false
 
-          resetEditPassword({ syzhid: this.$store.state.user.info.yhzhid, yhmm: values.password })
+          ePassword({ yhzh: this.$store.state.user.info.yhzh, yhmm: values.password, dxyzm: values.captcha })
             .then((res) => {
               if (res.code === 200) {
                 this.$message.success('重置密码成功！')
+                this.$store.commit('SET_SFCZ', 0)
                 $router.push({ name: 'index' })
               } else {
                 this.$message.success('重置密码失败！')
@@ -213,48 +336,32 @@ export default {
       })
     },
 
-    getCaptcha(e) {
-      e.preventDefault()
+    handleSubmit2() {
       const {
         form: { validateFields },
-        state,
-        $message,
-        $notification
+        state
       } = this
-
-      validateFields(['account'], { force: true }, (err, values) => {
+      validateFields({ force: true }, (err, values) => {
+        console.info(err)
         if (!err) {
-          state.smsSendBtn = true
-
-          const interval = window.setInterval(() => {
-            if (state.time-- <= 0) {
-              state.time = 60
-              state.smsSendBtn = false
-              window.clearInterval(interval)
-            }
-          }, 1000)
-
-          const hide = $message.loading('验证码发送中..', 0)
-
-          getSmsCaptcha({ phoneNumber: values.account, type: '2' })
+          state.passwordLevelChecked = false
+          console.info({ syzhid: this.$store.state.user.info.syzhid, yhmm: values.password })
+          resetEditPassword({ syzhid: this.$store.state.user.info.syzhid, yhmm: values.password })
             .then((res) => {
-              setTimeout(hide, 2500)
-              $notification['success']({
-                message: '提示',
-                description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-                duration: 8
-              })
+              if (res.code === 200) {
+                this.$message.success('重置密码成功！')
+              } else {
+                this.$message.success('重置密码失败！')
+              }
             })
-            .catch((err) => {
-              setTimeout(hide, 1)
-              clearInterval(interval)
-              state.time = 60
-              state.smsSendBtn = false
-              this.requestFailed(err)
+            .catch((err) => this.requestFailed(err))
+            .finally(() => {
+              this.modalVisible = false
             })
         }
       })
     },
+
     requestFailed(err) {
       this.$notification['error']({
         message: '错误',
@@ -271,7 +378,9 @@ export default {
   margin-bottom: 0;
 }
 
-.table-operator {
-  margin-bottom: 18px;
-}
+.getCaptcha {
+    display: block;
+    width: 100%;
+    height: 40px;
+  }
 </style>

@@ -36,6 +36,7 @@
 import order from '@/api/order'
 import moment from 'moment'
 import { mapActions } from 'vuex'
+import { throttle } from 'lodash'
 export default {
   data() {
     return {
@@ -158,12 +159,11 @@ export default {
       const vm = this
       return {
         on: {
-          click: () => {
-            // this.emitP(record)
+          click: throttle(function() {
             vm.$emit('closeModal', 'product', record)
             console.info('closeModal', record)
-            this.visible = false
-          }
+            vm.visible = false
+          }, 500, { leading: false, trailing: true })
         }
       }
     },

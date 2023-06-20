@@ -97,6 +97,7 @@ export default {
     open(title, data, khbh, khmc) {
       this.visible = true
       this.title = title
+      this.form.resetFields()
       setTimeout(() => {
         console.info(this.form, { khmc: khmc, khbh: khbh })
         this.form.setFieldsValue({ khmc: khmc, khbh: khbh })
@@ -120,8 +121,7 @@ export default {
           if (values.mrdz) {
             values.mrdz = '1'
           } else {
-            this.$message.warn('必须有一个默认地址！')
-            return
+            values.mrdz = '0'
           }
           if (!values.id) {
             shdz

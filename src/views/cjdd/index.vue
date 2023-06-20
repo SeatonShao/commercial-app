@@ -58,6 +58,7 @@
           </a-row>
           <a-row :gutter="gutter">
             <a-col :span="2"> 收货人信息 </a-col>
+            <a-col :span="2" :offset="20" style="text-align: right;"> <a-button type="link" @click="$router.push({path: '/order/shdz'})" style="z-index:1; padding: 0;">管理收货地址</a-button> </a-col>
           </a-row>
           <a-divider></a-divider>
           <a-radio-group class="addressGroup" v-model="form.shrs" @change="handleDz">
@@ -104,20 +105,20 @@
             :dataSource="form.ddmxList"
             :scroll="{ x: 600 }"
             :rowKey="
-              (record) => {
+              () => {
                 return parseFloat(10000000000 * Math.random()).toFixed(0) + ''
               }
             "
             bordered
           >
             <template slot="slaction" slot-scope="text, record, index">
-              <a-input-number :step="10" :value="text" @blur="(e) => checkSl(index, e.target.value, 'sl')" />
+              <a-input-number :step="10" v-model="form.ddmxList[index].sl" @blur="(e) => checkSl(index, e.target.value, 'sl')" />
             </template>
             <template slot="djaction" slot-scope="text, record, index">
-              <a-input-number :step="0.01" :value="text" @blur="(e) => checkSl(index, e.target.value, 'dj')" />元
+              <a-input-number :step="0.01"  v-model="form.ddmxList[index].dj" @blur="(e) => checkSl(index, e.target.value, 'dj')" />元
             </template>
             <template slot="khjaction" slot-scope="text, record, index">
-              <a-input-number :step="0.01" :value="text" @blur="(e) => checkSl(index, e.target.value, 'khj')" />
+              <a-input-number :step="0.01"  v-model="form.ddmxList[index].khj" @blur="(e) => checkSl(index, e.target.value, 'khj')" />
             </template>
             <template slot="jeaction" slot-scope="text, record, index"> ￥ {{ je(index) }} 元 </template>
             <template slot="action" slot-scope="text, record, index">
@@ -176,7 +177,7 @@ export default {
           { required: true, message: '采购方必选！', trigger: 'blur' }
         ],
         hkdd: [
-          { required: true, message: '汇款底单必传！', trigger: 'blur' }
+          { required: false, message: '汇款底单必传！', trigger: 'blur' }
         ]
       },
       formField: {
@@ -315,6 +316,14 @@ export default {
   },
   created() {
     window.addEventListener('resize', this.getHeight)
+    const list = this.$store.state.user.gxList
+    if (list && list.length > 0) {
+      this.form.kh = list[0].synm + ';' + list[0].symc + ';' + list[0].sybm
+      this.form.khmc = list[0].symc
+      this.form.khbh = list[0].sybm
+      this.form.khnm = list[0].synm
+      this.querySHDZ(list[0].synm)
+    }
   },
   methods: {
      queryDetail() {
@@ -345,7 +354,7 @@ export default {
           khbh: record.khbh,
           hkdd: '',
           hkddurl: '',
-          ddmxList: record.mxList,
+          ddmxList: record.ddmxList,
           ddzje: record.ddzje
          })
          console.info(this.form)
@@ -397,7 +406,7 @@ export default {
           console.info(this.$store.state.user)
           this.form.zdrid = this.$store.state.user.info.yhzh
           this.form.zdrmc = this.$store.state.user.info.yhmc
-        if (this.form.hkdd.length > 0) {
+        if (this.form.hkdd && this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
           const hkddurl = this.form.hkddurl.split(';')
           for (let i = 0; i < hkdd.length; i++) {
@@ -409,6 +418,7 @@ export default {
           order.createOrder(this.form).then((res) => {
             if (res.code === 200) {
               this.$message.success('保存成功')
+            this.$router.push({ path: '/order/ddlb' })
               this.clear()
             } else {
               this.$message.error(res.message)
@@ -458,7 +468,7 @@ export default {
           this.form.sjly = 'order'
           this.form.zdrid = this.$store.state.user.info.yhzh
           this.form.zdrmc = this.$store.state.user.info.yhmc
-        if (this.form.hkdd.length > 0) {
+        if (this.form.hkdd && this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
           const hkddurl = this.form.hkddurl.split(';')
           for (let i = 0; i < hkdd.length; i++) {
@@ -587,6 +597,7 @@ export default {
     },
     del(index) {
       this.form.ddmxList.splice(index, 1)
+      this.setDdzje()
     },
     newAddress(index) {
       console.info()
@@ -606,10 +617,16 @@ export default {
       })
     },
     querySHDZ(khbh) {
+      this.form.shdz = ''
+      this.form.lxr = ''
+      this.form.lxdh = ''
+      this.form.shrs = ''
       shdz.list({ khbh: khbh }).then((res) => {
         if (res.code === 200) {
           this.data = res.data
-          console.info(this.data)
+          if (!this.data) {
+            this.data = []
+          }
           this.data.push({ id: '' })
           for (const i in res.data) {
             if (res.data[i].mrdz === '1') {
@@ -648,7 +665,7 @@ export default {
       console.info('closeModal', type, record)
       if (record) {
       if (type === 'product') {
-        this.form.ddmxList.push(Object.assign({ js: 0, sl: 0, dj: 0 }, record))
+        this.form.ddmxList.push(Object.assign({ js: 0, sl: 0, dj: 0 }, { ...record }))
       } else if (type === 'modal') {
         console.info(record)
         const kh = record.khnm + ';' + record.khmc + ';' + record.khbh
@@ -661,13 +678,24 @@ export default {
             this.data.push({ id: '' })
           }
         })
+        let lxr = ''
+        let lxdh = ''
+        let shdz2 = ''
 
+        for (const i in this.data) {
+          if (this.data[i].shrs == record.lxr && this.data[i].shdz == record.shdz) {
+            lxr = record.lxr
+            lxdh = record.lxdh
+            shdz2 = record.shdz
+          }
+        }
+        console.info(lxr + ',' + lxdh + ',' + shdz)
          Object.assign(this.form, {
           kh: kh,
-          lxr: record.lxr,
-          lxdh: record.lxdh,
-          shdz: record.shdz,
-          shrs: record.lxr + ',' + record.lxdh + ',' + record.shdz,
+          lxr: lxr,
+          lxdh: lxdh,
+          shdz: shdz2,
+          shrs: lxr ? (lxr + ',' + lxdh + ',' + shdz) : '',
           khmc: record.khmc,
           khnm: record.khnm,
           khbh: record.khbh,

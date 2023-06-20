@@ -59,7 +59,7 @@
     },
     methods: {
       newAddress(index) {
-      if (index !== this.data.size - 1) {
+      if (this.data && index !== this.data.size - 1) {
         this.$refs.addForm.open('收货人地址', this.data[index], this.khnm, this.khmc)
       } else {
         this.$refs.addForm.open('收货人地址', {}, this.khnm, this.khmc)
@@ -83,8 +83,8 @@
       changeKH(e) {
         let v = this.kh
       v = v.split(';')
-      this.form.khmc = v[1]
-      this.form.khnm = v[0]
+      this.khmc = v[1]
+      this.khnm = v[0]
       this.querySHDZ(this.khnm)
     },
     querySHDZ (khnm) {
@@ -110,8 +110,9 @@
         shdz.del({ id: this.data[index].id }).then(res => {
           if (res.code === 200) {
             console.info(res)
-            this.data = res.data
           }
+        }).finally(() => {
+          this.querySHDZ(this.khnm)
         })
       }
     }

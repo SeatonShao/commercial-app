@@ -93,6 +93,8 @@ export default {
         pageSize: 10,
         total: 0
       }
+      this.selectedRows = []
+      this.selectedRowKeys = []
       this.queryParam = { mbmc: '' }
       this.data = []
       this.loadData()

@@ -5,11 +5,11 @@
     :visible="visible"
     @cancel="handleCancel"
   >
-  <template slot="footer">
-        <a-button key="submit" type="primary" :loading="confirmLoading" @click="handleSubmit" >
-          确定
-        </a-button>
-      </template>
+    <template slot="footer">
+      <a-button key="submit" type="primary" :loading="confirmLoading" @click="handleSubmit" >
+        确定
+      </a-button>
+    </template>
     <a-spin :spinning="spinning">
       <div class="search-wrapper">
         <a-row>

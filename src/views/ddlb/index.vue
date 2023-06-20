@@ -9,7 +9,63 @@
         <a-tab-pane key="5" tab="已发货"> </a-tab-pane>
         <a-tab-pane key="6" tab="部分发货"> </a-tab-pane>
         <a-tab-pane key="7" tab="已取消"> </a-tab-pane>
-        <a-input placeholder="请输入订单号搜索" slot="tabBarExtraContent" v-model="ddh" @pressEnter="search"/>
+        <div slot="tabBarExtraContent" style="display:flex;justify-content: space-between;flex-wrap: nowrap;align-items: center;">
+          <a-input placeholder="请输入订单号搜索" v-model="ddh" @pressEnter="search" style="margin-right:10px;"/>
+          <a-button type="primary" @click="search" style="margin-right:10px;">搜索</a-button>
+          <a-popconfirm
+          placement="bottomRight"
+          okType="primary"
+          ok-text="搜索"
+          cancel-text="重置"
+          @cancel="reset"
+          :visible="visible"
+          @confirm="search">
+            <a-icon slot="icon" />
+            <template slot="title">
+              <a-form layout="inline" style="width: 600px">
+                    <a-row>
+                    <a-col :span="12">
+                    <a-form-item label="订单号" :labelCol="{ style: 'width: 80px' }">
+                      <a-input :style="{ width: '140px',padding: '0 8px 0 0' }" v-model="queryParam.ddh" allow-clear placeholder=""/>
+                    </a-form-item>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-form-item label="订单状态" :labelCol="{ style: 'width: 80px' }">
+                      <a-select v-model="queryParam.ddzt" placeholder="" :style="{ width: '140px',padding: '0 8px 0 0' }">
+                        <a-select-option v-for="(item,index) in ztData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+                      </a-select>
+                    </a-form-item>
+                  </a-col>
+                  </a-row>
+                  <a-row>
+                  <a-col :span="12">
+                    <a-form-item label="订单日期" :labelCol="{ style: 'width: 80px' }">
+                      <a-date-picker format="YYYY-MM-DD" placeholder="" v-model="queryParam.ksrq" :style="{ width: '140px',padding: '0 8px 0 0' }"/>
+                    </a-form-item>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-form-item label="至" :labelCol="{ style: 'width: 80px' }">
+                      <a-date-picker format="YYYY-MM-DD" placeholder="" v-model="queryParam.jsrq" :style="{ width: '140px',padding: '0 8px 0 0' }"/>
+                    </a-form-item>
+                  </a-col>
+                </a-row>
+                <a-row>
+                  <a-col :span="12">
+                    <a-form-item label="产品名称" :labelCol="{ style: 'width: 80px' }">
+                      <a-input :style="{ width: '140px',padding: '0 8px 0 0' }" v-model="queryParam.cpmc" allow-clear placeholder=""/>
+                    </a-form-item>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-form-item label="产品编码" :labelCol="{ style: 'width: 80px' }">
+                      <a-input :style="{ width: '140px',padding: '0 8px 0 0' }" v-model="queryParam.cpbm" allow-clear placeholder=""/>
+                    </a-form-item>
+                  </a-col>
+                </a-row>
+              </a-form>
+            </template>
+            <a-icon type="down" @click="visible = !visible"></a-icon>
+          </a-popconfirm>
+        </div>
       </a-tabs>
       <div>
         <a-button @click="batchExport" :loading="batchExportLoading"><a-icon type="export"/>下载   </a-button>
@@ -18,7 +74,7 @@
         ref="table"
         :columns="columns"
         :dataSource="data"
-        :rowKey="(record) => record.ddh"
+        :rowKey="() => {return parseFloat(10000000000 * Math.random()).toFixed(0) + '' }"
         :scroll="{ x: 1000, y: tableHeight }"
         bordered
         :pagination="pagination"
@@ -58,8 +114,18 @@ export default {
         pageSize: 10
       },
       key: '1',
+      visible: false,
+      ztData: [],
       tableHeight: window.innerHeight - 265,
       ddh: '',
+      queryParam: {
+        ddh: '',
+        ddzt: '',
+        ksrq: '',
+        jsrq: '',
+        cpmc: '',
+        cpbm: ''
+      },
       data: [],
       // 表头
       columns: [
@@ -155,11 +221,24 @@ export default {
   created() {
     window.addEventListener('resize', this.getHeight)
     this.search()
+    this.dictTypeData().then((res) => {
+                this.ztData = this.$options.filters['dictData']('ddzt')
+              })
   },
   filters: {
     getStatus: order.getStatus
   },
   methods: {
+    reset() {
+      this.queryParam = {
+        ddh: '',
+        ddzt: '',
+        ksrq: '',
+        jsrq: '',
+        cpmc: '',
+        cpbm: ''
+      }
+    },
     closeUploadHkdd() {
       console.info()
       this.search()
@@ -205,7 +284,10 @@ export default {
             this.showPagination && this.localPagination.pageSize || this.pageSize
         }
       )
-            order.ddlb(Object.assign(page, { ksfl: this.key, ddzt: '1', ddh: this.ddh })).then(res => {
+      const param = Object.assign({ ksfl: this.key }, this.queryParam)
+      param.ksrq = param.ksrq ? moment(param.ksrq).format('YYYY-MM-DD') : ''
+      param.jsrq = param.jsrq ? moment(param.jsrq).format('YYYY-MM-DD') : ''
+            order.ddlb(Object.assign(page, param)).then(res => {
               if (res.code === 200) {
                 this.data = res.data.rows
                 const pagination = { ...this.pagination }
@@ -258,13 +340,6 @@ export default {
     },
     moment,
     ...mapActions(['Login', 'Logout', 'dictTypeData']),
-    /**
-     * 单个删除
-     */
-    singleDelete(record) {
-      // const param = [{ 'yxzylxLsbh': record.yxzylxLsbh }]
-      // this.yxzylxMonthDelete(param)
-    },
     handleOk() {
       this.$refs.table.refresh()
     }
@@ -272,13 +347,16 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+
 /deep/ .ant-table-thead > tr > th {
   padding: 5px;
 }
 /deep/ .ant-table-tbody > tr > td {
   padding: 5px;
 }
-
+/deep/ .ant-popover-buttons{
+  text-align: center;
+}
 .orange {
     border-color: rgba(255, 165, 0, 0.3);
     background-color: rgba(255, 165, 0, 0.1);

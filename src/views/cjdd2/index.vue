@@ -505,10 +505,38 @@ export default {
             trigger: ['blur', 'change']
           }
         ],
+        khlxmc: [
+          {
+            required: true,
+            message: '请选择考核经理',
+            trigger: ['blur', 'change']
+          }
+        ],
+        xslxmc: [
+          {
+            required: true,
+            message: '请选择考核经理',
+            trigger: ['blur', 'change']
+          }
+        ],
         sfmc: [
           {
             required: true,
             message: '请选择省份',
+            trigger: ['blur', 'change']
+          }
+        ],
+        hkrq: [
+          {
+            required: true,
+            message: '汇款日期必填',
+            trigger: ['blur', 'change']
+          }
+        ],
+        zl: [
+          {
+            required: true,
+            message: '资料必选',
             trigger: ['blur', 'change']
           }
         ]
@@ -684,7 +712,7 @@ export default {
         this.form.sycgmc = sycg[1]
         this.form.sjly = 'order2'
         this.form.hkddList = []
-        if (this.form.hkdd.length > 0) {
+        if (this.form.hkdd && this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
           const hkddurl = this.form.hkddurl.split(';')
           for (let i = 0; i < hkdd.length; i++) {
@@ -696,6 +724,7 @@ export default {
         order.createOrderPC(this.form).then(res => {
           if (res.code === 200) {
             this.$message.success('保存成功')
+            this.$router.push({ path: '/order/ddlb' })
             this.clear()
           } else {
             this.$message.error(res.message)
@@ -750,7 +779,7 @@ export default {
         this.form.sycgmc = sycg[1]
         this.form.sjly = 'order'
         this.form.hkddList = []
-        if (this.form.hkdd.length > 0) {
+        if (this.form.hkdd && this.form.hkdd.length > 0) {
           const hkdd = this.form.hkdd.split(';')
           const hkddurl = this.form.hkddurl.split(';')
           for (let i = 0; i < hkdd.length; i++) {
@@ -786,6 +815,10 @@ export default {
           je = je + parseFloat(item.je)
         })
           this.form.ddzje = (isNaN(je) ? 0 : parseFloat(je).toFixed(2))
+    },
+    del(index) {
+      this.form.ddmxList.splice(index, 1)
+      this.setDdzje()
     },
     handleChange(value, index, column) {
       const target = this.form.ddmxList[index]
@@ -896,6 +929,10 @@ export default {
       this.selectvisible = false
     },
     querySHDZ (khmc) {
+      this.form.shdz = ''
+      this.form.lxr = ''
+      this.form.lxdh = ''
+      this.form.shrs = ''
       shdz
         .list({ khbh: khmc })
         .then((res) => {
@@ -969,9 +1006,6 @@ export default {
         .catch((e) => {
           console.info(e)
         })
-    },
-    del (index) {
-      this.form.ddmxList.splice(index, 1)
     },
     handleOk() {
       this.querySHDZ(this.form.khnm)

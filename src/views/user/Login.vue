@@ -50,7 +50,7 @@
           <a-alert v-if="isLoginError" type="error" showIcon :message="this.accountLoginErrMsg" />
           <div class="tabtitle">手机号登录</div>
           <a-form-item>
-            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {initialValue: '16653966066', rules: [{ required: true, pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
+            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {initialValue: '', rules: [{ required: true, pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
             </a-input>
           </a-form-item>
 
@@ -236,17 +236,20 @@ export default {
         customActiveKey,
         Login
       } = this
-
       state.loginBtn = true
       const validateFieldsKey = customActiveKey === 'tab1' ? ['account', 'password'] : ['mobile', 'captcha']
+      console.info(validateFieldsKey)
       if (this.tenantOpen) {
         validateFieldsKey.push('tenantCode')
       }
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
         this.loginParams = values
+        console.info(this.$ls)
         if (!err) {
+        const count = this.$ls.get('ErrorCount') ? this.$ls.get('ErrorCount') : '0'
+        console.info(count)
           // 是否开启验证码
-          if (this.captchaOpen && customActiveKey === 'tab1') {
+          if (this.captchaOpen && count > 1) {
             this.$refs.verify.show()
             state.loginBtn = false
             return
@@ -259,7 +262,6 @@ export default {
           if (this.tenantOpen) {
             loginParams.tenantCode = values.tenantCode
           }
-          console.info(loginParams)
           Login(loginParams)
             .then((res) => this.loginSuccess(res))
             .catch(err => this.requestFailed(err))
@@ -279,7 +281,7 @@ export default {
     verifySuccess (params) {
       this.loginParams.code = params.captchaVerification
       console.log(JSON.stringify(this.loginParams))
-      this.loginParams.customActiveKey = 'tab1'
+      this.loginParams.customActiveKey = this.customActiveKey
       this.Login(this.loginParams).then((res) => this.loginSuccess(res))
         .catch(err => this.requestFailed(err))
         .finally(() => {
@@ -330,7 +332,13 @@ export default {
       })
     },
     loginSuccess (res) {
-        this.$router.push({ path: '/' })
+      console.info(this.$store.state.user.info.sfcz)
+      console.info(this.$store.state.user.info.sfcz == '1')
+        if (this.$store.state.user.info.sfcz == '1') {
+          this.$router.push({ path: '/order/zhsz' })
+        } else {
+          this.$router.push({ path: '/' })
+        }
         this.isLoginError = false
         // 加载字典所有字典到缓存中
         this.dictTypeData().then((res) => { })

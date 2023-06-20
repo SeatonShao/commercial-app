@@ -33,6 +33,9 @@ const user = {
     },
     SET_GXLIST: (state, gxList) => {
       state.gxList = gxList
+    },
+    SET_SFCZ: (state, v) => {
+      state.info.sfcz = v
     }
   },
 
@@ -40,30 +43,37 @@ const user = {
     // 登录
     Login ({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
+        const count = Vue.ls.get('ErrorCount') ? Vue.ls.get('ErrorCount') : '0'
         if (userInfo.customActiveKey === 'tab1') {
           login(userInfo).then(response => {
             if (response && response.code === 200) {
               const result = response.data
               Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
+              Vue.ls.set('ErrorCount', 0, 24 * 60 * 60 * 1000)
               commit('SET_TOKEN', result)
               resolve()
             } else {
+              Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
               reject(new Error(response.message))
             }
           }).catch(error => {
+            Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
             reject(error)
           })
         } else {
-          loginMobile({ account: userInfo.mobile, code: userInfo.captcha }).then(response => {
+          loginMobile({ account: userInfo.mobile, smscode: userInfo.captcha, code: userInfo.code }).then(response => {
             if (response && response.code === 200) {
             const result = response.data
             Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
+            Vue.ls.set('ErrorCount', 0, 24 * 60 * 60 * 1000)
             commit('SET_TOKEN', result)
             resolve()
           } else {
+            Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
             reject(new Error(response.message))
           }
           }).catch(error => {
+            Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
             reject(error)
           })
         }
