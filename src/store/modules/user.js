@@ -49,15 +49,15 @@ const user = {
             if (response && response.code === 200) {
               const result = response.data
               Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
-              Vue.ls.set('ErrorCount', 0, 24 * 60 * 60 * 1000)
+              Vue.ls.set(userInfo.account, 0, 60 * 60 * 1000)
               commit('SET_TOKEN', result)
               resolve()
             } else {
-              Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
+              Vue.ls.set(userInfo.account, 1 + parseInt(count), 60 * 60 * 1000)
               reject(new Error(response.message))
             }
           }).catch(error => {
-            Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
+            Vue.ls.set(userInfo.account, 1 + parseInt(count), 60 * 60 * 1000)
             reject(error)
           })
         } else {
@@ -65,15 +65,15 @@ const user = {
             if (response && response.code === 200) {
             const result = response.data
             Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
-            Vue.ls.set('ErrorCount', 0, 24 * 60 * 60 * 1000)
+            Vue.ls.set(userInfo.mobile, 0, 60 * 60 * 1000)
             commit('SET_TOKEN', result)
             resolve()
           } else {
-            Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
+            Vue.ls.set(userInfo.mobile, 1 + parseInt(count), 60 * 60 * 1000)
             reject(new Error(response.message))
           }
           }).catch(error => {
-            Vue.ls.set('ErrorCount', 1 + parseInt(count), 24 * 60 * 60 * 1000)
+            Vue.ls.set(userInfo.mobile, 1 + parseInt(count), 60 * 60 * 1000)
             reject(error)
           })
         }

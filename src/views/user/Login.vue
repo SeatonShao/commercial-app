@@ -246,7 +246,7 @@ export default {
         this.loginParams = values
         console.info(this.$ls)
         if (!err) {
-        const count = this.$ls.get('ErrorCount') ? this.$ls.get('ErrorCount') : '0'
+        const count = this.$ls.get(values.account) ? this.$ls.get(values.account) : '0'
         console.info(count)
           // 是否开启验证码
           if (this.captchaOpen && count > 1) {
